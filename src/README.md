@@ -1,0 +1,1 @@
+This is the source code of the VASM compiler. This includes the stylist, code generation, linker, lexer, parser, and AST generator.
