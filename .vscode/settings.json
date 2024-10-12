@@ -1,0 +1,10 @@
+{
+    "cSpell.words": [
+        "AST",
+        "deinit",
+        "VASM",
+        "zig"
+    ],
+    "editor.semanticHighlighting.enabled": true,
+    "zig.buildOnSave": true,
+}
