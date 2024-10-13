@@ -15,6 +15,7 @@
 //!
 
 const std = @import("std");
+const peephole = @import("peephole.zig");
 
 const Lexer = @import("lexer.zig").Lexer;
 const LexerArea = @import("lexer.zig").LexerArea;
@@ -106,6 +107,9 @@ pub fn Vendor(comptime format_type: type) type {
         /// are ran with their respective parameters.
         instruction_set: std.StringHashMap(Instruction(format_type)),
 
+        /// The dead code eliminator
+        peephole_optimizer: peephole.PeepholeOptimizer(format_type),
+
         /// the parent allocator.
         parent_allocator: std.mem.Allocator,
 
@@ -118,6 +122,7 @@ pub fn Vendor(comptime format_type: type) type {
                 .parent_allocator = parent_allocator,
                 .procedure_map = std.StringHashMap(std.ArrayList(format_type)).init(parent_allocator),
                 .instruction_set = std.StringHashMap(Instruction(format_type)).init(parent_allocator),
+                .peephole_optimizer = peephole.PeepholeOptimizer(format_type).init(parent_allocator),
             };
         }
 
@@ -178,6 +183,9 @@ pub fn Vendor(comptime format_type: type) type {
                             for (proc.items) |byt| {
                                 try generator.append(byt);
                             }
+                            
+                            // that instruction has been expanded once and is in use
+                            try self.peephole_optimizer.remember(ins.name.identifier_string);
                         } else {
 
                             // built in instruction
@@ -199,6 +207,10 @@ pub fn Vendor(comptime format_type: type) type {
 
             try self.procedure_map.put(procedure_name, generator.binary);
         }
+
+        pub fn peepholeOptimizeBinary(self: *Self) !void {
+            try self.peephole_optimizer.optimizeUsingKnownInstructions(&self.procedure_map);
+        }
     };
 }
 
@@ -219,6 +231,13 @@ fn oneArgumentInstruction(generator: *Generator(i32), vendor: *Vendor(i32), args
 
     try std.testing.expectEqual(1, args.len);
     try std.testing.expectEqual(0x0A, args[0].toNumber().getNumber());
+}
+
+fn oneArgumentInstructionWithPlacement(generator: *Generator(i32), vendor: *Vendor(i32), args: []Value) InstructionError!void {
+    _ = vendor;
+    try std.testing.expectEqual(1, args.len);
+    try std.testing.expectEqual(0x0A, args[0].toNumber().getNumber());
+    try generator.append(25);
 }
 
 fn createNodeFrom(alloc: std.mem.Allocator, text: []const u8) !Node {
@@ -322,4 +341,27 @@ test "creating and using a vendor with 1 argument function" {
     try sample_vendor.generateBinary(root);
     try std.testing.expect(sample_vendor.procedure_map.get("a") != null);
     try std.testing.expectEqual(0, sample_vendor.procedure_map.get("a").?.items.len);
+}
+
+test "dead code elimination" {
+    var arena = std.heap.ArenaAllocator.init(std.testing.allocator);
+    const allocatir = arena.allocator();
+    defer arena.deinit();
+
+    var sample_vendor = Vendor(i32).init(allocatir);
+
+    var one_ins = Instruction(i32).init("one", &oneArgumentInstruction);
+    try sample_vendor.implementInstruction("one", &one_ins);
+
+    const root = try createNodeFrom(allocatir, "a: one 0x0A; b: one 0x0A; _start: a; ");
+
+    try sample_vendor.generateBinary(root);
+
+    try sample_vendor.peephole_optimizer.remember("_start");
+    try sample_vendor.peepholeOptimizeBinary();
+
+    try std.testing.expect(sample_vendor.procedure_map.get("a") != null);
+    try std.testing.expect(sample_vendor.procedure_map.get("_start") != null);
+    try std.testing.expectEqual(0, sample_vendor.procedure_map.get("a").?.items.len);
+    try std.testing.expect(sample_vendor.procedure_map.get("b") == null); // b exited, but got optimized away
 }
