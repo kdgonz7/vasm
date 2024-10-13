@@ -9,4 +9,4 @@ this number will change and features will. It is important to stay on top of thi
 ## Tips
 
 * Always run and create tests, make sure your changes are scalable and stable
-
+* Create and use `*Result` types when more than an error union is needed.
