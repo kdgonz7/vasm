@@ -1,0 +1,129 @@
+'\" t
+.\"     Title: vasm
+.\"    Author: VOLT Foundation
+.\" Generator: Asciidoctor 2.0.18
+.\"      Date: 2024-10-13
+.\"    Manual: VASM
+.\"    Source: VASM
+.\"  Language: English
+.\"
+.TH "VASM" "1" "2024-10-13" "VASM" "VASM"
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.ss \n[.ss] 0
+.nh
+.ad l
+.de URL
+\fI\\$2\fP <\\$1>\\$3
+..
+.als MTO URL
+.if \n[.g] \{\
+.  mso www.tmac
+.  am URL
+.    ad l
+.  .
+.  am MTO
+.    ad l
+.  .
+.  LINKSTYLE blue R < >
+.\}
+.SH "VASM"
+vasm \- A compiler for the OpenLUD, NexFUSE, SolarisVM, and JADE VMs.
+.SH "SYNOPSIS"
+.sp
+vasm [FILE ...] [OPTIONS ...]
+.SH "DESCRIPTION"
+.sp
+A standard compiler for LR Assembly, a weakly typed assembler language designed
+to be compatible with multiple VM environments.
+.SH "OPTIONS"
+.sp
+\fB\-h \-\-help\fP
+.RS 4
+Shows this message
+.RE
+.sp
+\fB\-\-format, \-f FORMAT\fP
+.RS 4
+Configures the format used in the binary. The format defines the instruction set used in the
+compilation process. Binary sizes and bits are handled in this option. For example, selecting
+the \fBopenlud\fP option will automatically create an 8\-bit vendor instead of truncating
+a 32\-bit one. See \fBVENDORS\fP for more information.
+.RE
+.sp
+\fB\-O<N>\fP
+.RS 4
+Defines the optimization level for the compiler. This option has an effect on the output binary.
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+\fBO0\fP
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+No optimizations.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+\fBO1\fP
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+Adds peephole optimizations such as dead code elimination.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+\fBO2\fP
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+Forcibly quitting after an empty procedure, and optimizing code as its written instead of after its wrote.
+.RE
+.RE
+.SH "VENDORS"
+.sp
+A "vendor" is defined as information to help generate binaries based on documented instructions sets. Instead of mapping each instruction to a number, vasm supports generation of binaries through hand\-implemented functions which are children of instructions.
+.SH "AUTHOR"
+.sp
+VOLT Foundation
