@@ -106,6 +106,10 @@ pub const Value = union(ValueTag) {
         return self.number;
     }
 
+    pub fn toLiteral(self: *Value) Literal {
+        return self.literal;
+    }
+
     pub fn getType(self: *const Value) ValueTag {
         switch (self.*) {
             ValueTag.identifier => ValueTag.identifier,
