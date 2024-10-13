@@ -97,6 +97,13 @@ pub fn Linker(comptime binary_size: type) type {
             }
         }
 
+        pub fn linkOptimizedWithContext(self: *Self, ctx: anytype, vendor: *Vendor(binary_size), proc_map: std.StringHashMap(std.ArrayList(binary_size))) !void {
+            try vendor.peephole_optimizer.remember(ctx.start_definition);
+            try vendor.peepholeOptimizeBinary();
+
+            try self.linkUnOptimizedWithContext(ctx, proc_map);
+        }
+
         pub fn iterateAndLink(self: *Self, ctx: anytype, proc_map: std.StringHashMap(std.ArrayList(binary_size))) !void {
             var iterator_procedure_map = proc_map.iterator();
 
@@ -286,4 +293,35 @@ test "creating and using a linker to create a usable binary and writing it to a 
     try std.testing.expectEqual(12, link.binary.items[4]);
 
     try link.writeToFile("bin/creating_and_using_a_linker_to_create-x86_64.ol", .little);
+}
+
+test "creating and using a linker using linkOptimized" {
+    var arena = std.heap.ArenaAllocator.init(std.testing.allocator);
+    const allocatir = arena.allocator();
+
+    var link = Linker(i8).init(std.testing.allocator);
+    var vend1 = Vendor(i8).init(allocatir);
+    var mov_ins = Instruction(i8).init("move", &movInstructionTest);
+
+    defer link.deinit();
+    defer arena.deinit();
+
+    const root = try createNodeFrom(allocatir, "a: move;");
+
+    try vend1.implementInstruction("move", &mov_ins);
+    try vend1.generateBinary(root);
+
+    try link.linkOptimizedWithContext(.{
+        .start_definition = "_start",
+        .fold_procedures = false,
+        .procedure_heading_byte = 10,
+        .procedure_closing_byte = 22,
+        .use_end_byte = true,
+        .end_byte = 12,
+        .compile = true,
+        .vasm_header = false,
+    }, &vend1, vend1.procedure_map);
+
+    try std.testing.expectEqual(1, link.binary.items.len);
+    try std.testing.expectEqual(12, link.binary.items[0]);
 }
