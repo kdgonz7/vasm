@@ -123,7 +123,33 @@ Forcibly quitting after an empty procedure, and optimizing code as its written i
 .RE
 .SH "VENDORS"
 .sp
-A "vendor" is defined as information to help generate binaries based on documented instructions sets. Instead of mapping each instruction to a number, vasm supports generation of binaries through hand\-implemented functions which are children of instructions.
+A "vendor" is defined as information to help generate binaries based on documented instructions sets. Instead of mapping each instruction to a number, vasm supports generation of binaries through hand\-implemented functions which are children of instructions. Using the VASM zig API, the OpenLUD vendor is created using the following method:
+.sp
+.if n .RS 4
+.nf
+.fam C
+pub fn vendor(vend: *codegen.Vendor(i8)) !void {
+    vend.nul_after_sequence = true;
+    vend.nul_byte = 0;
+
+    try vend.createAndImplementInstruction(i8, "echo", &echoInstruction);
+    try vend.createAndImplementInstruction(i8, "mov", &moveInstruction);
+    try vend.createAndImplementInstruction(i8, "each", &eachInstruction);
+    try vend.createAndImplementInstruction(i8, "init", &initInstruction);
+    // ...
+}
+.fam
+.fi
+.if n .RE
+.sp
+The above example uses \f(CRcreateAndImplementInstruction\fP to implement a couple instructions that are specific to the OpenLUD format. These are optional as they are a part of the compilation process and not the language itself. Vendors are just a separate implementation that defines a streamlined process of compiling and verifying binaries.
+.sp
+Vendors then take input source and turn it into a \fBPROCEDURE MAP\fP that can then be operated on separately. Procedure maps are key\-value pairs that represent the procedure hierarchy of a program. Procedures can be tagged by size (example a \fB5\-byte procedure\fP) and in that stage is where peephole optimizations can take place. The peephole optimizer (defined in \fIpeephole.zig\fP) is not aware of the original source code and only aware of the generated binary, however, using information given to the optimizer prior, is able to free up and remove procedures that go unused.
+.sp
+In hindsight, this doesn\(cqt have much benefit aside from memory consumption when procedure folding is enabled, however, using \fINexFUSE\-like Procedures\fP (where each procedure label is engraved in the resulting binary) yields higher results.
+.SH "INFORMATION"
+.sp
+This document\(cqs version is 1.0.0.
 .SH "AUTHOR"
 .sp
 VOLT Foundation
