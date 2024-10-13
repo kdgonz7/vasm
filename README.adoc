@@ -1,0 +1,63 @@
+// Copyright (C) VOLT Foundation 2024-present
+= vasm
+VOLT Foundation
+v1.0.0
+:description: Volt compiler README.
+
+The VOLT assembly compiler. Turns human readable instructions into usable output binaries for multiple formats.
+
+== Optimization
+
+The VOLT assembler conforms to the LR assembly standard and is an optimizing compiler, meaning that there are multiple passes through the procedure map that allow for smart decisions to be made about the control flow that improve the performance and size of an application.
+
+For more on optimizations, see link:./OPTIMIZATIONS.md[the OPTIMIZATIONS file].
+
+== Building vasm
+
+To build the VOLT Assembly compiler, you will need to install Zig `0.14.0-dev.1671+085cc54aa` or above (backward compatibility is not guaranteed). An upgrade into a newer Zig version will happen whenever the upstream tar downloads work and are at a reliable point. For Windows-esque devices, the following commands can be used:
+
+=== Requirements
+
+* A zig compiler (upstream currently built with **Zig 0.14.0-dev.1671+085cc54aa**)
+* `zig build`
+* Git (either link:https://git-scm.com/downloads/win[Git For Windows] or link:https://git-scm.com/downloads/linux[Git Installations for Linux])
+* `asciidoctor` (for documentation)
+
+[source,shell]
+-----
+# To install:
+$ git clone https://github.com/kdgonz7/vasm.git
+$ cd vasm
+$ zig build tests && zig build # To run the test suite and build the frontend program into a zig-out directory
+$ zig build tests && sudo zig build --prefix DIRECTORY # runs the test suite and builds the frontend program into DIRECTORY
+
+# Uninstall and documentation are only available on unix-based platforms. Cygwin/MSYS can be a potential
+# built solution.
+-----
+
+For Unix-like devices with `make`: (**verify that you have `sudo` and `git` installed**)
+
+[source, shell]
+-----
+# To install:
+$ git clone https://github.com/kdgonz7/vasm.git
+$ cd vasm
+$ make && sudo make install
+
+# To uninstall (the inverse operations of sudo make install):
+$ sudo make uninstall
+
+# To make documentation (builds man pages)
+$ make doc
+
+# To open the relative documentation (man/man1/vasm.1)
+$ make help
+-----
+
+== Development for vasm
+
+The project comes with several files designed for the link:https://code.visualstudio.com/[Visual Studio Code] text editor. These include things such as building, cleaning, documentation, and testing. Other IDEs will not be worked on.
+
+== Read More
+
+More information on the compiler's semantics can be found in the link:./documentation/vasm.adoc[vasm(1) man page].
