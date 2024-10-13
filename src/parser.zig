@@ -461,7 +461,8 @@ pub const Parser = struct {
                 .identifier => {
                     var stream = self.getInternalTokens();
 
-                    // if there's a next token, check it against the colon OpKind
+                    // if there's a next token, check if it's a colon
+                    // if so, then its a header and we can ditch the value processing
                     if (!stream.isOutOfRange(stream.getCurrentStreamPosition() + 1)) {
                         const potential_header_decl = try self.getNextToken();
 
