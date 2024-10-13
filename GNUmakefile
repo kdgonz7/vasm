@@ -3,7 +3,7 @@
 
 ASCIIDOCTOR=$(shell which asciidoctor)
 FORMAT=manpage
-all: tests app
+all: tests app vasm.adoc
 
 clean:
 	rm zig-out -rf
