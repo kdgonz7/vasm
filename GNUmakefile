@@ -16,6 +16,6 @@ app:
 	zig build
 
 vasm.asciidoc:
-	$(ASCIIDOCTOR) -b $(FORMAT) documentation/vasm.asciidoc -o man/vasm.1
+	$(ASCIIDOCTOR) -b $(FORMAT) documentation/vasm.adoc -o man/vasm.1
 
-doc: vasm.asciidoc
+doc: vasm.adoc
