@@ -18,7 +18,7 @@ To build the VOLT Assembly compiler, you will need to install Zig `0.14.0-dev.16
 
 === Requirements
 
-* A zig compiler (upstream currently built with **Zig 0.14.0-dev.1671+085cc54aa**)
+* A zig compiler (upstream currently built with **Zig 0.14.0-dev.1671+085cc54aa** but any Zig v0.14.0 should work fine.)
 * `zig build`
 * Git (either link:https://git-scm.com/downloads/win[Git For Windows] or link:https://git-scm.com/downloads/linux[Git Installations for Linux])
 * `asciidoctor` (for documentation)
