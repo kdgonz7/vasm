@@ -20,8 +20,26 @@ b:
 
 ### Dead Code
 
-VASM can error out on unused register writes and reads by judging the instructions passed into the procedures. While the feature is useful it can potentially lead to slower compile times and therefore is disabled by default. These tags will
-also need to be provided by the virtual instruction set implementation using functions like `registerWrite()` and `registerRead()`.
+VASM has dead code elimination to get rid of unused procedures. Especially useful for non-folding programs for
+platforms such as NexFUSE.
+
+```asm
+;; size: 5 bytes with definition
+a:
+    echo 'A';
+
+;; size: 5 bytes with definition
+b:
+    echo 'A';
+
+_start:
+    a; ;; calls a, 5 byte expansion
+```
+
+Without dead code elimination the program size would be in total **`15` bytes**.
+
+However, using dead code elimination, it reads through all of the used instructions and removes any that are unused.
+DCE can bring the program down in size from 15 bytes to 10 bytes, enabling folding can drop the size down to 5 bytes, a 33% improvement.
 
 ### Empty Procedures
 
