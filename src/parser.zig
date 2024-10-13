@@ -131,7 +131,7 @@ pub const Register = struct {
         };
     }
 
-    pub fn getRegisterNumber(self: *Register) usize {
+    pub fn getRegisterNumber(self: *const Register) usize {
         return self.register_number;
     }
 };
