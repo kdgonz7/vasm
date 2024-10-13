@@ -1,0 +1,45 @@
+= vasm(1)
+VOLT Foundation
+v1.0.0
+:doctype: manpage
+:manmanual: VASM
+:mansource: VASM
+:manname-title: vasm
+
+== Name
+
+vasm - A compiler for the OpenLUD, NexFUSE, SolarisVM, and JADE VMs.
+
+== Synopsis
+
+vasm [FILE ...] [OPTIONS ...]
+
+== Description
+
+A standard compiler for LR Assembly, a weakly typed assembler language designed
+to be compatible with multiple VM environments.
+
+== Options
+
+*-h --help*::
+  Shows this message
+*--format, -f FORMAT*::
+Configures the format used in the binary. The format defines the instruction set used in the
+compilation process. Binary sizes and bits are handled in this option. For example, selecting
+the **openlud** option will automatically create an 8-bit vendor instead of truncating
+a 32-bit one. See **VENDORS** for more information.
+
+*-O<N>*::
+Defines the optimization level for the compiler. This option has an effect on the output binary.
+  * *O0*
+    * No optimizations.
+  * *O1*
+    * Adds peephole optimizations such as dead code elimination.
+  * *O2*
+    * Forcibly quitting after an empty procedure, and optimizing code as its written instead of after its wrote.
+
+== Vendors
+
+A "vendor" is defined as information to help generate binaries based on documented instructions sets. Instead of mapping each instruction to a number, vasm supports generation of binaries through hand-implemented functions which are children of instructions.
+
+
