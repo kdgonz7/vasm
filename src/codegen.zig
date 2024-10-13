@@ -407,4 +407,6 @@ test "creating and using a vendor with 0 argument functions that returns an erro
     const root = try createNodeFrom(allocatir, "a: mov\nb: a\n");
 
     try std.testing.expectError(error.InstructionError, sibc.generateBinary(root));
+    try std.testing.expectEqual(.literal, sibc.erroneous_result.type_mismatch.expected);
+    try std.testing.expectEqual(.register, sibc.erroneous_result.type_mismatch.got);
 }
