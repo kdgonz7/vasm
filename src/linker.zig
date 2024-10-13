@@ -113,6 +113,16 @@ pub fn Linker(comptime binary_size: type) type {
         pub fn appendByte(self: *Self, byte: binary_size) !void {
             try self.binary.append(byte);
         }
+
+        pub fn writeToFile(self: *Self, file_name: []const u8, endian: std.builtin.Endian) !void {
+            var file = try std.fs.cwd().createFile(file_name, .{});
+            defer file.close();
+            var writer = file.writer();
+
+            for (self.binary.items) |byt| {
+                try writer.writeInt(binary_size, byt, endian);
+            }
+        }
     };
 }
 
@@ -228,4 +238,40 @@ test "creating and using a linker to create a usable binary w/ procedures using 
     try std.testing.expectEqual(5, link.binary.items[2]);
     try std.testing.expectEqual(22, link.binary.items[3]);
     try std.testing.expectEqual(12, link.binary.items[4]);
+}
+
+test "creating and using a linker to create a usable binary and writing it to a file" {
+    var arena = std.heap.ArenaAllocator.init(std.testing.allocator);
+    const allocatir = arena.allocator();
+
+    var link = Linker(i8).init(std.testing.allocator);
+    var vend1 = Vendor(i8).init(allocatir);
+    var mov_ins = Instruction(i8).init("move", &movInstructionTest);
+
+    defer link.deinit();
+    defer arena.deinit();
+
+    const root = try createNodeFrom(allocatir, "a: move;");
+
+    try vend1.implementInstruction("move", &mov_ins);
+    try vend1.generateBinary(root);
+
+    try link.linkUnOptimizedWithContext(.{
+        .start_definition = "_start",
+        .fold_procedures = false,
+        .procedure_heading_byte = 10,
+        .procedure_closing_byte = 22,
+        .use_end_byte = true,
+        .end_byte = 12,
+        .compile = true,
+        .vasm_header = false,
+    }, vend1.procedure_map);
+
+    try std.testing.expectEqual(5, link.binary.items.len);
+    try std.testing.expectEqual(10, link.binary.items[0]);
+    try std.testing.expectEqual(5, link.binary.items[2]);
+    try std.testing.expectEqual(22, link.binary.items[3]);
+    try std.testing.expectEqual(12, link.binary.items[4]);
+
+    try link.writeToFile("hello.ol", .little);
 }
