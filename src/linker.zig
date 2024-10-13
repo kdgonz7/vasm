@@ -14,6 +14,7 @@ const std = @import("std");
 const codegen = @import("codegen.zig");
 const lexer = @import("lexer.zig");
 const parser = @import("parser.zig");
+const instruction_result = @import("instruction_result.zig");
 
 const Vendor = codegen.Vendor;
 const Instruction = codegen.Instruction;
@@ -23,6 +24,7 @@ const Lexer = lexer.Lexer;
 const Parser = parser.Parser;
 const Value = parser.Value;
 const Node = parser.Node;
+const InstructionResult = instruction_result.InstructionResult;
 
 pub const VASM_HEADER = "compiled using volt assembler(VASM)";
 
@@ -145,11 +147,13 @@ pub fn Linker(comptime binary_size: type) type {
     };
 }
 
-fn movInstructionTest(generator: *Generator(i8), vendor: *Vendor(i8), args: []Value) InstructionError!void {
+fn movInstructionTest(generator: *Generator(i8), vendor: *Vendor(i8), args: []Value) InstructionError!InstructionResult {
     _ = vendor;
 
     try generator.append(5);
     try std.testing.expectEqual(0, args.len);
+
+    return .ok;
 }
 
 fn createNodeFrom(alloc: std.mem.Allocator, text: []const u8) !Node {
