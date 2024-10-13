@@ -16,6 +16,15 @@ app:
 	zig build
 
 vasm.adoc:
-	$(ASCIIDOCTOR) -b $(FORMAT) documentation/vasm.adoc -o man/vasm.1
+	mkdir -p man/man1
+	$(ASCIIDOCTOR) -b $(FORMAT) documentation/vasm.adoc -o man/man1/vasm.1
 
 doc: vasm.adoc
+
+install: vasm.adoc
+	zig build --prefix /usr/local
+	cp man/man1/* /usr/local/man/man1
+
+uninstall:
+	rm /usr/local/bin/vasm
+	rm /usr/local/man/man1/vasm.1
