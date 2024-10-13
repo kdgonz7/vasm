@@ -85,6 +85,10 @@ pub fn Linker(comptime binary_size: type) type {
             if (!entry_point_encountered and ctx.compile == false) {
                 return error.MissingStart;
             }
+
+            if (ctx.use_end_byte == true) {
+                try self.appendByte(ctx.end_byte);
+            }
         }
 
         pub fn iterateAndLink(self: *Self, ctx: anytype, proc_map: std.StringHashMap(std.ArrayList(binary_size))) !void {
@@ -154,6 +158,7 @@ test "creating and using a linker to create a usable binary" {
         .procedure_closing_byte = 22,
         .compile = false,
         .vasm_header = false,
+        .use_end_byte = false,
     }, vend1.procedure_map);
 
     try std.testing.expectEqual(1, link.binary.items.len);
@@ -182,10 +187,45 @@ test "creating and using a linker to create a usable binary w/ procedures using 
         .procedure_closing_byte = 22,
         .compile = true,
         .vasm_header = false,
+        .use_end_byte = false,
     }, vend1.procedure_map);
 
     try std.testing.expectEqual(4, link.binary.items.len);
     try std.testing.expectEqual(10, link.binary.items[0]);
     try std.testing.expectEqual(5, link.binary.items[2]);
     try std.testing.expectEqual(22, link.binary.items[3]);
+}
+
+test "creating and using a linker to create a usable binary w/ procedures using folding and an end byte" {
+    var arena = std.heap.ArenaAllocator.init(std.testing.allocator);
+    const allocatir = arena.allocator();
+
+    var link = Linker(i8).init(std.testing.allocator);
+    var vend1 = Vendor(i8).init(allocatir);
+    var mov_ins = Instruction(i8).init("move", &movInstructionTest);
+
+    defer link.deinit();
+    defer arena.deinit();
+
+    const root = try createNodeFrom(allocatir, "a: move;");
+
+    try vend1.implementInstruction("move", &mov_ins);
+    try vend1.generateBinary(root);
+
+    try link.linkUnOptimizedWithContext(.{
+        .start_definition = "_start",
+        .fold_procedures = false,
+        .procedure_heading_byte = 10,
+        .procedure_closing_byte = 22,
+        .use_end_byte = true,
+        .end_byte = 12,
+        .compile = true,
+        .vasm_header = false,
+    }, vend1.procedure_map);
+
+    try std.testing.expectEqual(5, link.binary.items.len);
+    try std.testing.expectEqual(10, link.binary.items[0]);
+    try std.testing.expectEqual(5, link.binary.items[2]);
+    try std.testing.expectEqual(22, link.binary.items[3]);
+    try std.testing.expectEqual(12, link.binary.items[4]);
 }
