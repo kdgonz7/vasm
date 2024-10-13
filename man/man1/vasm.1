@@ -64,7 +64,6 @@ Defines the optimization level for the compiler. This option has an effect on th
 .  IP \(bu 2.3
 .\}
 \fBO0\fP
-.RE
 .sp
 .RS 4
 .ie n \{\
@@ -76,6 +75,7 @@ Defines the optimization level for the compiler. This option has an effect on th
 .\}
 No optimizations.
 .RE
+.RE
 .sp
 .RS 4
 .ie n \{\
@@ -86,7 +86,6 @@ No optimizations.
 .  IP \(bu 2.3
 .\}
 \fBO1\fP
-.RE
 .sp
 .RS 4
 .ie n \{\
@@ -98,16 +97,6 @@ No optimizations.
 .\}
 Adds peephole optimizations such as dead code elimination.
 .RE
-.sp
-.RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.  sp -1
-.  IP \(bu 2.3
-.\}
-\fBO2\fP
 .RE
 .sp
 .RS 4
@@ -118,7 +107,18 @@ Adds peephole optimizations such as dead code elimination.
 .  sp -1
 .  IP \(bu 2.3
 .\}
+\fBO2\fP
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
 Forcibly quitting after an empty procedure, and optimizing code as its written instead of after its wrote.
+.RE
 .RE
 .RE
 .SH "VENDORS"
