@@ -104,7 +104,7 @@ pub fn Vendor(comptime format_type: type) type {
 
         /// The list of strings to instructions. These
         /// are ran with their respective parameters.
-        instruction_set: std.StringHashMap(*const Instruction(format_type)),
+        instruction_set: std.StringHashMap(Instruction(format_type)),
 
         /// the parent allocator.
         parent_allocator: std.mem.Allocator,
@@ -117,7 +117,7 @@ pub fn Vendor(comptime format_type: type) type {
             return Self{
                 .parent_allocator = parent_allocator,
                 .procedure_map = std.StringHashMap(std.ArrayList(format_type)).init(parent_allocator),
-                .instruction_set = std.StringHashMap(*const Instruction(format_type)).init(parent_allocator),
+                .instruction_set = std.StringHashMap(Instruction(format_type)).init(parent_allocator),
             };
         }
 
@@ -128,7 +128,14 @@ pub fn Vendor(comptime format_type: type) type {
 
         /// Puts `name` to `instruction`
         pub fn implementInstruction(self: *Self, name: []const u8, instruction: *Instruction(format_type)) !void {
-            try self.instruction_set.put(name, instruction);
+            try self.instruction_set.put(name, instruction.*);
+        }
+
+        pub fn createAndImplementInstruction(self: *Self, comptime size: type, name: []const u8, function: *const fn (generator: *Generator(size), vendor: *Vendor(size), args: []Value) InstructionError!void) !void {
+            try self.instruction_set.put(name, Instruction(size){
+                .function = function,
+                .name = name,
+            });
         }
 
         /// Populates the vendor's procedure map with instructions by running their
@@ -138,8 +145,8 @@ pub fn Vendor(comptime format_type: type) type {
                 .root => |*root_node| {
                     for (root_node.children.items) |*child| {
                         switch (child.*) {
-                            .procedure => {
-                                try self.generateBinaryProcedure(&child.procedure);
+                            .procedure => |*proc| {
+                                try self.generateBinaryProcedure(proc);
                             },
                             else => {
                                 return error.InvalidExpressionRoot;
