@@ -32,11 +32,11 @@ a 32-bit one. See **VENDORS** for more information.
 *-O<N>*::
 Defines the optimization level for the compiler. This option has an effect on the output binary.
   * *O0*
-    * No optimizations.
+  ** No optimizations.
   * *O1*
-    * Adds peephole optimizations such as dead code elimination.
+  ** Adds peephole optimizations such as dead code elimination.
   * *O2*
-    * Forcibly quitting after an empty procedure, and optimizing code as its written instead of after its wrote.
+  ** Forcibly quitting after an empty procedure, and optimizing code as its written instead of after its wrote.
 
 == Vendors
 
