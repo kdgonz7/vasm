@@ -23,6 +23,15 @@ pub fn build(builder: *std.Build) void {
         .root_source_file = builder.path("src/linker.zig"),
     });
 
+    const frontend_unit_tests = builder.addTest(.{
+        .root_source_file = builder.path("src/frontend.zig"),
+    });
+
+    const drivers_unit_tests = builder.addTest(.{
+        .root_source_file = builder.path("src/drivers.zig"),
+        .optimize = .Debug,
+    });
+
     const frontend_exe = builder.addExecutable(.{
         .root_source_file = builder.path("src/frontend.zig"),
         .name = "vasm",
@@ -42,5 +51,7 @@ pub fn build(builder: *std.Build) void {
     build_step.dependOn(&builder.addRunArtifact(stylist_unit_tests).step);
     build_step.dependOn(&builder.addRunArtifact(codegen_unit_tests).step);
     build_step.dependOn(&builder.addRunArtifact(template_unit_tests).step);
+    build_step.dependOn(&builder.addRunArtifact(frontend_unit_tests).step);
+    build_step.dependOn(&builder.addRunArtifact(drivers_unit_tests).step);
     builder.installArtifact(frontend_exe);
 }
