@@ -28,3 +28,6 @@ install: vasm.adoc
 uninstall:
 	rm /usr/local/bin/vasm
 	rm /usr/local/man/man1/vasm.1
+
+help:
+	man man/man1/vasm.1
