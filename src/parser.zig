@@ -16,17 +16,19 @@
 //!
 
 const std = @import("std");
-const LexerZ = @import("lexer.zig");
-const TokenStreamZ = @import("token_stream.zig");
+const lexerl = @import("lexer.zig");
+const token_stream_z = @import("token_stream.zig");
 
-const Identifier = TokenStreamZ.Identifier;
-const Number = TokenStreamZ.Number;
-const TokenStream = TokenStreamZ.TokenStream;
-const Operator = TokenStreamZ.Operator;
-const OpKind = TokenStreamZ.OperatorKind;
+const Identifier = token_stream_z.Identifier;
+const Number = token_stream_z.Number;
+const TokenStream = token_stream_z.TokenStream;
+const Operator = token_stream_z.Operator;
+const Literal = token_stream_z.Literal;
 
-const Lexer = LexerZ.Lexer;
-const LexerError = LexerZ.LexerError;
+const Lexer = lexerl.Lexer;
+const LexerError = lexerl.LexerError;
+
+const OpKind = token_stream_z.OperatorKind;
 
 pub const ParseError = error{
     /// A simple notifier when the parser is at the end of its stream before parsing an input src.
@@ -72,6 +74,10 @@ pub const ValueTag = enum {
     /// The LR Assembly "Register" type.
     /// A reference to a register on the CPU. Platform-dependent behaviour.
     register,
+
+    /// The LR Assembly "Literal" type.
+    /// A single character in the ASCII set.
+    literal,
 };
 
 /// A value. Represents an LR assembly value. [compliant]
@@ -82,6 +88,7 @@ pub const Value = union(ValueTag) {
     number: Number,
     range: Range,
     register: Register,
+    literal: Literal,
 
     pub fn toRegister(self: *Value) Register {
         return self.register;
@@ -105,6 +112,7 @@ pub const Value = union(ValueTag) {
             ValueTag.number => ValueTag.number,
             ValueTag.range => ValueTag.range,
             ValueTag.register => ValueTag.register,
+            ValueTag.literal => ValueTag.literal,
         }
     }
 };
@@ -255,12 +263,12 @@ pub const Parser = struct {
         return self.token_stream_internal;
     }
 
-    pub fn getCurrentToken(self: *Parser) !*TokenStreamZ.Token {
+    pub fn getCurrentToken(self: *Parser) !*token_stream_z.Token {
         var str = self.getInternalTokens();
         return try str.getItemByReferenceOrError(str.getCurrentStreamPosition());
     }
 
-    pub fn getNextToken(self: *Parser) !*TokenStreamZ.Token {
+    pub fn getNextToken(self: *Parser) !*token_stream_z.Token {
         var str = self.getInternalTokens();
         return try str.getItemByReferenceOrError(str.getCurrentStreamPosition() + 1);
     }
@@ -519,7 +527,7 @@ pub const Parser = struct {
         return node;
     }
 
-    pub fn createValueFromToken(self: *Parser, token: *TokenStreamZ.Token) !Value {
+    pub fn createValueFromToken(self: *Parser, token: *token_stream_z.Token) !Value {
         _ = self;
         switch (token.*) {
             .number => {
@@ -548,6 +556,10 @@ pub const Parser = struct {
                         .identifier = ident,
                     };
                 }
+            },
+
+            .literal => |lit| {
+                return Value{ .literal = lit };
             },
 
             else => {
