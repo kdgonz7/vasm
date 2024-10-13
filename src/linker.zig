@@ -285,5 +285,5 @@ test "creating and using a linker to create a usable binary and writing it to a 
     try std.testing.expectEqual(22, link.binary.items[3]);
     try std.testing.expectEqual(12, link.binary.items[4]);
 
-    try link.writeToFile("hello.ol", .little);
+    try link.writeToFile("bin/creating_and_using_a_linker_to_create-x86_64.ol", .little);
 }
