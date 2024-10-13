@@ -316,6 +316,7 @@ pub const Lexer = struct {
         const span = Span{
             .begin = beginning_of_identifier,
             .end = self.getCurrentPosition(),
+            .line_number = self.getLineNumber(),
         };
 
         const body = self.getInputTextSlice(span.begin, span.end);
@@ -337,6 +338,7 @@ pub const Lexer = struct {
         const span = Span{
             .begin = beginning_number,
             .end = self.getCurrentPosition(),
+            .line_number = self.getLineNumber(),
         };
 
         const body = self.getInputTextSlice(span.begin, span.end);
@@ -374,6 +376,7 @@ pub const Lexer = struct {
         const span = Span{
             .begin = beginning_of_literal,
             .end = self.getCurrentPosition(),
+            .line_number = self.getLineNumber(),
         };
 
         // we are here
