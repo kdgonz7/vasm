@@ -24,6 +24,8 @@ const Parser = parser.Parser;
 const Value = parser.Value;
 const Node = parser.Node;
 
+pub const VASM_HEADER = "compiled using volt assembler(VASM)";
+
 pub const Error = error{MissingStart};
 
 /// ## Linking
@@ -49,6 +51,8 @@ pub fn Linker(comptime binary_size: type) type {
         /// The allocator used to allocate the entire binary.
         parent_allocator: std.mem.Allocator,
 
+        write_header: bool = false,
+
         pub fn init(parent_allocator: std.mem.Allocator) Self {
             return Self{
                 .parent_allocator = parent_allocator,
@@ -71,6 +75,8 @@ pub fn Linker(comptime binary_size: type) type {
         ///     * Should procedures be folded or should they be traditional?
         ///         * **When disabling procedure folding, the first letter of the procedure name will be used. For faster and usable code, procedure folding should remain enabled.**
         pub fn linkUnOptimizedWithContext(self: *Self, ctx: anytype, proc_map: std.StringHashMap(std.ArrayList(binary_size))) !void {
+            self.write_header = ctx.vasm_header;
+
             if (!ctx.fold_procedures) {
                 try self.iterateAndLink(ctx, proc_map);
             }
@@ -118,6 +124,12 @@ pub fn Linker(comptime binary_size: type) type {
             var file = try std.fs.cwd().createFile(file_name, .{});
             defer file.close();
             var writer = file.writer();
+
+            if (self.write_header) {
+                for (VASM_HEADER) |c| {
+                    try writer.writeByte(c);
+                }
+            }
 
             for (self.binary.items) |byt| {
                 try writer.writeInt(binary_size, byt, endian);
