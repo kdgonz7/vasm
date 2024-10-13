@@ -24,6 +24,7 @@ pub const TokenStreamError = error{
 pub const Span = struct {
     begin: usize,
     end: usize,
+    line_number: usize,
 };
 
 /// An identifier is from A-Z, a-z, 0-9, '_' or '.'
@@ -32,6 +33,7 @@ pub const Identifier = struct {
     span: Span = Span{
         .begin = 0,
         .end = 0,
+        .line_number = 0,
     },
 
     const Self = @This();
@@ -50,6 +52,7 @@ pub const Number = struct {
     span: Span = Span{
         .begin = 0,
         .end = 0,
+        .line_number = 0,
     },
 
     pub fn init(with_number: i64) Number {
@@ -90,6 +93,7 @@ pub const Literal = struct {
     span: Span = Span{
         .begin = 0,
         .end = 0,
+        .line_number = 0,
     },
 
     pub fn init(with_char: u8) Literal {
