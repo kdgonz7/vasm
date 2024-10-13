@@ -90,34 +90,34 @@ pub const Value = union(ValueTag) {
     register: Register,
     literal: Literal,
 
-    pub fn toRegister(self: *Value) Register {
+    pub fn toRegister(self: *const Value) Register {
         return self.register;
     }
 
-    pub fn toRange(self: *Value) Range {
+    pub fn toRange(self: *const Value) Range {
         return self.range;
     }
 
-    pub fn toIdentifier(self: *Value) Register {
+    pub fn toIdentifier(self: *const Value) Register {
         return self.identifier;
     }
 
-    pub fn toNumber(self: *Value) Number {
+    pub fn toNumber(self: *const Value) Number {
         return self.number;
     }
 
-    pub fn toLiteral(self: *Value) Literal {
+    pub fn toLiteral(self: *const Value) Literal {
         return self.literal;
     }
 
     pub fn getType(self: *const Value) ValueTag {
-        switch (self.*) {
+        return switch (self.*) {
             ValueTag.identifier => ValueTag.identifier,
             ValueTag.number => ValueTag.number,
             ValueTag.range => ValueTag.range,
             ValueTag.register => ValueTag.register,
             ValueTag.literal => ValueTag.literal,
-        }
+        };
     }
 };
 
