@@ -16,6 +16,7 @@
 
 const std = @import("std");
 const peephole = @import("peephole.zig");
+const instruction_result = @import("instruction_result.zig");
 
 const Lexer = @import("lexer.zig").Lexer;
 const LexerArea = @import("lexer.zig").LexerArea;
@@ -28,11 +29,14 @@ const Value = @import("parser.zig").Value;
 const Root = @import("parser.zig").Root;
 const Procedure = @import("parser.zig").Procedure;
 
+const InstructionResult = instruction_result.InstructionResult;
+
 pub const InstructionError = error{
     OutOfMemory,
     InstructionExpectsDifferentValue,
     InstructionDoesntExist,
     TestExpectedEqual,
+    InstructionError,
 };
 
 pub const CodegenError = error{
@@ -47,9 +51,9 @@ pub fn Instruction(comptime format: type) type {
         name: []const u8,
 
         /// The function ran from the instruction
-        function: *const fn (*Generator(format), *Vendor(format), []Value) InstructionError!void,
+        function: *const fn (*Generator(format), *Vendor(format), []Value) InstructionError!InstructionResult,
 
-        pub fn init(name: []const u8, function: *const fn (*Generator(format), *Vendor(format), []Value) InstructionError!void) Instruction(format) {
+        pub fn init(name: []const u8, function: *const fn (*Generator(format), *Vendor(format), []Value) InstructionError!InstructionResult) Instruction(format) {
             return Instruction(format){
                 .name = name,
                 .function = function,
@@ -117,12 +121,18 @@ pub fn Vendor(comptime format_type: type) type {
         nul_after_sequence: bool = false,
         nul_byte: format_type = 0,
 
+        /// A list of instruction results ran from each instruction.
+        results: std.ArrayList(InstructionResult),
+
+        erroneous_result: InstructionResult = undefined,
+
         pub fn init(parent_allocator: std.mem.Allocator) Self {
             return Self{
                 .parent_allocator = parent_allocator,
                 .procedure_map = std.StringHashMap(std.ArrayList(format_type)).init(parent_allocator),
                 .instruction_set = std.StringHashMap(Instruction(format_type)).init(parent_allocator),
                 .peephole_optimizer = peephole.PeepholeOptimizer(format_type).init(parent_allocator),
+                .results = std.ArrayList(InstructionResult).init(parent_allocator),
             };
         }
 
@@ -136,7 +146,7 @@ pub fn Vendor(comptime format_type: type) type {
             try self.instruction_set.put(name, instruction.*);
         }
 
-        pub fn createAndImplementInstruction(self: *Self, comptime size: type, name: []const u8, function: *const fn (generator: *Generator(size), vendor: *Vendor(size), args: []Value) InstructionError!void) !void {
+        pub fn createAndImplementInstruction(self: *Self, comptime size: type, name: []const u8, function: *const fn (generator: *Generator(size), vendor: *Vendor(size), args: []Value) InstructionError!InstructionResult) !void {
             try self.instruction_set.put(name, Instruction(size){
                 .function = function,
                 .name = name,
@@ -183,14 +193,21 @@ pub fn Vendor(comptime format_type: type) type {
                             for (proc.items) |byt| {
                                 try generator.append(byt);
                             }
-                            
+
                             // that instruction has been expanded once and is in use
                             try self.peephole_optimizer.remember(ins.name.identifier_string);
                         } else {
 
                             // built in instruction
                             if (self.instruction_set.get(ins.name.identifier_string)) |map_item| {
-                                try map_item.function(&generator, self, ins.parameters.items);
+                                const res = try map_item.function(&generator, self, ins.parameters.items);
+                                switch (res) {
+                                    .ok => {},
+                                    else => {
+                                        self.erroneous_result = res;
+                                        return error.InstructionError;
+                                    },
+                                }
                             } else {
                                 return error.InstructionDoesntExist;
                             }
@@ -216,21 +233,32 @@ pub fn Vendor(comptime format_type: type) type {
 
 // =====- Tests -===== //
 
-fn movInstructionTest(generator: *Generator(i32), vendor: *Vendor(i32), args: []Value) InstructionError!void {
+fn movInstructionTest(generator: *Generator(i32), vendor: *Vendor(i32), args: []Value) !InstructionResult {
     _ = vendor;
     try generator.append(5);
     if (args.len == 1) {
         std.debug.print("{any}\n", .{args[0]});
     }
     try std.testing.expectEqual(0, args.len);
+
+    return .ok;
 }
 
-fn oneArgumentInstruction(generator: *Generator(i32), vendor: *Vendor(i32), args: []Value) InstructionError!void {
+fn movInstructionTestError(generator: *Generator(i32), vendor: *Vendor(i32), args: []Value) !InstructionResult {
+    _ = vendor;
+    _ = args;
+    _ = generator;
+    return InstructionResult.typeMismatch(.literal, .register);
+}
+
+fn oneArgumentInstruction(generator: *Generator(i32), vendor: *Vendor(i32), args: []Value) !InstructionResult {
     _ = vendor;
     _ = generator;
 
     try std.testing.expectEqual(1, args.len);
     try std.testing.expectEqual(0x0A, args[0].toNumber().getNumber());
+
+    return .ok;
 }
 
 fn oneArgumentInstructionWithPlacement(generator: *Generator(i32), vendor: *Vendor(i32), args: []Value) InstructionError!void {
@@ -364,4 +392,19 @@ test "dead code elimination" {
     try std.testing.expect(sample_vendor.procedure_map.get("_start") != null);
     try std.testing.expectEqual(0, sample_vendor.procedure_map.get("a").?.items.len);
     try std.testing.expect(sample_vendor.procedure_map.get("b") == null); // b exited, but got optimized away
+}
+
+test "creating and using a vendor with 0 argument functions that returns an error" {
+    var arena = std.heap.ArenaAllocator.init(std.testing.allocator);
+    const allocatir = arena.allocator();
+    defer arena.deinit();
+
+    var sibc = Vendor(i32).init(allocatir);
+
+    var mov_ins = Instruction(i32).init("mov", &movInstructionTestError);
+    try sibc.implementInstruction("mov", &mov_ins);
+
+    const root = try createNodeFrom(allocatir, "a: mov\nb: a\n");
+
+    try std.testing.expectError(error.InstructionError, sibc.generateBinary(root));
 }
