@@ -10,7 +10,7 @@ clean:
 	rm .zig-cache -rf
 
 tests:
-	zig build tests
+	zig build tests --summary all
 
 app:
 	zig build
