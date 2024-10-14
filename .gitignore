@@ -2,3 +2,4 @@
 /zig-out
 *.bkp
 vm
+todo*
