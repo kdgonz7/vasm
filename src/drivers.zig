@@ -100,3 +100,43 @@ test "populate vendor using openlud program 3" {
 
     try link.writeToFile("bin/populate_vendor_using_openlud_program_3-x86_64.ol", .little);
 }
+
+test "populate vendor using openlud program 4" {
+    var arena = std.heap.ArenaAllocator.init(std.testing.allocator);
+    const allocator = arena.allocator();
+    defer arena.deinit();
+
+    var link = linker.Linker(i8).init(allocator);
+    var vend1 = codegen.Vendor(i8).init(allocator);
+
+    try openlud.vendor(&vend1);
+
+    var root = try ast(allocator, "_start:\n    init R1;\n    put R1,65,1; ;; put 65 in register 1 at position 1\n    each R1;");
+
+    try std.testing.expectEqual(1, root.asRoot().getChildrenAmount());
+
+    try vend1.generateBinary(root);
+
+    try link.linkUnOptimizedWithContext(openlud.ctx, vend1.procedure_map);
+
+    const expected_bin: [12]i8 = .{
+        100, // INITIALIZE
+        1, // REGISTER 1
+        0, // END STATEMENT
+        45, // PUT
+        1, // IN REGISTER ONE
+        65, // THE BYTE 65
+        1, // AT POSITION 1
+        0, // END STATEMENT
+        42,
+        1,
+        0,
+        12, // END EXECUTABLE
+    };
+
+    for (0..expected_bin.len) |i| {
+        try std.testing.expectEqual(expected_bin[i], link.binary.items[i]);
+    }
+
+    try link.writeToFile("bin/populate_vendor_using_openlud_program_4-x86_64.ol", .little);
+}
