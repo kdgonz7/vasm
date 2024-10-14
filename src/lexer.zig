@@ -299,7 +299,6 @@ pub const Lexer = struct {
 
             else => {
                 if (!std.ascii.isWhitespace(character)) {
-                    std.debug.print("{c}\n", .{character});
                     return error.UnexpectedToken;
                 }
             },
