@@ -52,6 +52,11 @@ $ make doc
 
 # To open the relative documentation (man/man1/vasm.1)
 $ make help
+
+# To run tests
+$ make tests
+# OR
+$ make tests-summary # for a summary of passed and failed tests
 -----
 
 == Development for vasm
