@@ -3,7 +3,7 @@
 
 ASCIIDOCTOR=$(shell which asciidoctor)
 FORMAT=manpage
-all: tests app vasm.adoc
+all: tests app vasm.adoc stylist.adoc
 
 clean:
 	rm zig-out -rf
@@ -22,7 +22,10 @@ vasm.adoc:
 	mkdir -p man/man1
 	$(ASCIIDOCTOR) -b $(FORMAT) documentation/vasm.adoc -o man/man1/vasm.1
 
-doc: vasm.adoc
+stylist.adoc:
+	mkdir -p man/man1
+	$(ASCIIDOCTOR) -b $(FORMAT) documentation/stylist.adoc -o man/man1/vasm-stylist.1
+doc: vasm.adoc stylist.adoc
 
 install: vasm.adoc install-man
 	zig build --prefix /usr/local
