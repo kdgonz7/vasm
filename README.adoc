@@ -63,6 +63,18 @@ $ make tests-summary # for a summary of passed and failed tests
 
 The project comes with several files designed for the link:https://code.visualstudio.com/[Visual Studio Code] text editor. These include things such as building, cleaning, documentation, and testing. Other IDEs will not be worked on.
 
-== Read More
+== Description
 
-More information on the compiler's semantics can be found in the link:./documentation/vasm.adoc[vasm(1) man page].
+`vasm` is a LunarRED Assembly compiler for x86_64 machines that compiles input assembler into multiple different formats using a vendor runtime implementation of the instruction set. `vasm`, (historically VOLT, "_Versatile Optimized Language Transpiler_") follows a strict set of rules known as the LR Assembly standard, updated infrequently to provide a basis for how the language should look and perform. `vasm` is a modern version of the old 'VOLT' compiler which was also designed to compile into different formats, however lacked much of the security, type safety, and flexibility vasm provides. 
+
+VOLT traditionally had to be built in 32-bit or 8-bit modes respectively to compile to those destination formats. VASM instead takes a new approach using *Vendors*, that provide a shared API for executing, creating, and managing instructions. VASM is much more comprehensive and exhaustive than VOLT is, taking care of many abstractions to make writing LR assembly code a stable and usable experience.
+
+=== Migrating Legacy Codebase
+
+VASM plans to be as compatible with old assembler code as possible. The known incompatibilies of syntax between VASM and other compilers is as follows:
+
+// as time passes, more will be here
+* LunarRED (legacy)
+** Uses old procedure syntax which is specifically obsoleted by the standard
+
+Other compilers such as *SIBC* use the VOLT assembler syntax to compile, which is much more uncomplicated and lightweight. The syntax that is completely obsolete and never truly had a starting point was the `black` compiler syntax. 
