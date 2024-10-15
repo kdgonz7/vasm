@@ -39,6 +39,9 @@ pub fn vendor(vend: *codegen.Vendor(i8)) !void {
     try vend.createAndImplementInstruction(i8, "each", &eachInstruction);
     try vend.createAndImplementInstruction(i8, "init", &initInstruction);
     try vend.createAndImplementInstruction(i8, "put", &putInstruction);
+    try vend.createAndImplementInstruction(i8, "clear", &clearInstruction);
+    try vend.createAndImplementInstruction(i8, "reset", &resetInstruction);
+    try vend.createAndImplementInstruction(i8, "get", &getInstruction);
 }
 
 /// OpenLUD-aware link configuration.
