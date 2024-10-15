@@ -2,6 +2,8 @@
 //!
 
 const std = @import("std");
+const builtin = @import("builtin");
+
 const compiler_output = @import("compiler_output.zig");
 
 const ArrayList = std.ArrayList;
@@ -17,9 +19,11 @@ pub const Options = struct {
 };
 
 pub fn runManPage(allocator: anytype) void {
-    std.process.execv(allocator, &[_][]const u8{ "man", "vasm" }) catch {
-        errorMessage("no man installed.", .{});
-    };
+    if (std.process.can_execv) {
+        std.process.execv(allocator, &[_][]const u8{ "man", "vasm" }) catch {
+            errorMessage("no man installed.", .{});
+        };
+    }
 }
 
 pub fn extractOptions(allocator: std.mem.Allocator, arg_slice: [][:0]u8) Options {
