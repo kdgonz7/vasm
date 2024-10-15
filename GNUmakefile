@@ -24,8 +24,10 @@ vasm.adoc:
 
 doc: vasm.adoc
 
-install: vasm.adoc
+install: vasm.adoc install-man
 	zig build --prefix /usr/local
+
+install-man:
 	cp man/man1/* /usr/local/man/man1
 
 uninstall:
