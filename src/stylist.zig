@@ -56,16 +56,25 @@ pub const SuggestionList = std.ArrayList(Suggestion);
 pub fn analyze(parent_allocator: std.mem.Allocator, source_text: []const u8) !SuggestionList {
     var returning_list = SuggestionList.init(parent_allocator);
 
+    var line: usize = 1;
+    var char: usize = 1;
     for (0..source_text.len - 1) |i| {
+        if (source_text[i] == '\n') {
+            line += 1;
+            char = 1;
+        }
+
+        char += 1;
+
         switch (source_text[i]) {
             ',' => {
                 if (source_text.len <= i + 1 or source_text[i + 1] == '\n') {
                     try returning_list.append(
                         Suggestion{
                             .suggestion_location = SuggestionLocation{
-                                .line_number = 0,
-                                .problematic_area_begin = i,
-                                .problematic_area_end = i + 1,
+                                .line_number = line,
+                                .problematic_area_begin = char,
+                                .problematic_area_end = char + 1,
                             },
 
                             .suggestion_message = "trailing comma",
@@ -76,9 +85,9 @@ pub fn analyze(parent_allocator: std.mem.Allocator, source_text: []const u8) !Su
                     try returning_list.append(
                         Suggestion{
                             .suggestion_location = SuggestionLocation{
-                                .line_number = 0,
-                                .problematic_area_begin = i,
-                                .problematic_area_end = i + 1,
+                                .line_number = line,
+                                .problematic_area_begin = char,
+                                .problematic_area_end = char + 1,
                             },
 
                             .suggestion_message = "behavior of this line may be undefined. try replacing the `,` with `;`. ",
@@ -128,4 +137,17 @@ test analyze {
 
     try std.testing.expectEqual(1, more_suggestions.items.len);
     try std.testing.expectEqual(SuggestionType.good_practice, more_suggestions.items[0].suggestion_type); // missing newline
+}
+
+test "analyze lines" {
+    const suggestions_for = try analyze(std.testing.allocator, "a: mov R1, 5");
+    defer suggestions_for.deinit();
+
+    try std.testing.expectEqual(2, suggestions_for.items.len);
+    try std.testing.expectEqual(SuggestionType.non_compliant, suggestions_for.items[0].suggestion_type); // space after parameter
+    try std.testing.expectEqual(SuggestionType.good_practice, suggestions_for.items[1].suggestion_type); // missing newline
+    try std.testing.expectEqual(1, suggestions_for.items[0].suggestion_location.line_number); // missing newline
+
+    const more_suggestions = try analyze(std.testing.allocator, "a: mov R1");
+    defer more_suggestions.deinit();
 }
