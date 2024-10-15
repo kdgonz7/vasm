@@ -1,0 +1,24 @@
+= stylist(1)
+Kai D. Gonzalez
+v1.0.0
+:doctype: manpage
+:manmanual: stylist
+:mansource: stylist
+:manname-title: stylist
+
+== Name
+
+stylist - a styler for LunarRED assembly
+
+== Synopsis
+
+vasm [FILE...] [OPTIONS...]
+
+== Description
+
+stylist is a program engrained in VASM designed to enforce good and compliant styles within LunarRED assembly code. The stylist program can be found in the actual vasm program and can be used to lint source code at face value.
+
+== Options (for vasm)
+
+--enforce-stylist::
+Error when stylist reports anything wrong or suggests anything with the source code. This option is by default off and recommended to be on when working on consistent code bases.
