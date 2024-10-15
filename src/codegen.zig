@@ -42,6 +42,7 @@ pub const InstructionError = error{
 pub const CodegenError = error{
     /// an invalid root expression was encountered
     InvalidExpressionRoot,
+    RegisterNumberTooLarge,
 };
 
 /// Instruction information for compiler debugging. Not meant for actual use in runtimes, etc.
@@ -200,6 +201,11 @@ pub fn Vendor(comptime format_type: type) type {
 
                             // built in instruction
                             if (self.instruction_set.get(ins.name.identifier_string)) |map_item| {
+                                for (ins.parameters.items) |it| {
+                                    if (it.getType() == .register and it.toRegister().getRegisterNumber() > std.math.maxInt(format_type)) {
+                                        return error.RegisterNumberTooLarge;
+                                    }
+                                }
                                 const res = try map_item.function(&generator, self, ins.parameters.items);
                                 switch (res) {
                                     .ok => {},
@@ -257,6 +263,15 @@ fn oneArgumentInstruction(generator: *Generator(i32), vendor: *Vendor(i32), args
 
     try std.testing.expectEqual(1, args.len);
     try std.testing.expectEqual(0x0A, args[0].toNumber().getNumber());
+
+    return .ok;
+}
+
+fn registerSample(generator: *Generator(i8), vendor: *Vendor(i8), args: []Value) !InstructionResult {
+    _ = vendor;
+    _ = generator;
+
+    try std.testing.expectEqual(1, args.len);
 
     return .ok;
 }
@@ -409,4 +424,22 @@ test "creating and using a vendor with 0 argument functions that returns an erro
     try std.testing.expectError(error.InstructionError, sibc.generateBinary(root));
     try std.testing.expectEqual(.literal, sibc.erroneous_result.type_mismatch.expected);
     try std.testing.expectEqual(.register, sibc.erroneous_result.type_mismatch.got);
+}
+
+test "register too big" {
+    var arena = std.heap.ArenaAllocator.init(std.testing.allocator);
+    const allocatir = arena.allocator();
+    defer arena.deinit();
+
+    var sample_vendor = Vendor(i8).init(allocatir);
+
+    var one_ins = Instruction(i8).init("one", &registerSample);
+    try sample_vendor.implementInstruction("one", &one_ins);
+
+    const root = try createNodeFrom(allocatir, "_start: one R15353135");
+
+    try std.testing.expectError(error.RegisterNumberTooLarge, sample_vendor.generateBinary(root));
+
+    try sample_vendor.peephole_optimizer.remember("_start");
+    try sample_vendor.peepholeOptimizeBinary();
 }
