@@ -68,7 +68,7 @@ pub fn analyze(parent_allocator: std.mem.Allocator, source_text: []const u8) !Su
 
         switch (source_text[i]) {
             ',' => {
-                if (source_text.len <= i + 1 or source_text[i + 1] == '\n') {
+                if (source_text.len <= i + 1 or source_text[i + 1] == '\n' or (source_text[i + 1] == '\r' and source_text[i + 2] == '\n')) {
                     try returning_list.append(
                         Suggestion{
                             .suggestion_location = SuggestionLocation{
