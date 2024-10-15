@@ -129,6 +129,10 @@ pub fn main() !void {
                     );
                 }
             }
+
+            if (report.items.len > 0 and options.strict_stylist) {
+                compiler_output.errorMessageWithExit("too many stylist errors, can not continue. (--enforce-stylist)", .{});
+            }
         }
 
         lex.startLexingInputText() catch |err| compiler_output.printError(&lex, filename, err);
