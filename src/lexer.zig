@@ -315,6 +315,7 @@ pub const Lexer = struct {
         const span = Span{
             .begin = beginning_of_identifier,
             .end = self.getCurrentPosition(),
+            .char_begin = self.area.char_pos,
             .line_number = self.getLineNumber(),
         };
 
@@ -323,6 +324,7 @@ pub const Lexer = struct {
         try self.stream.addOne(Token{
             .identifier = Identifier{
                 .identifier_string = body,
+                .span = span,
             },
         });
     }
@@ -349,6 +351,8 @@ pub const Lexer = struct {
                 .number = std.fmt.parseInt(i64, body, 0) catch {
                     return error.MalformedNumber;
                 },
+
+                .span = span,
             },
         };
 
@@ -540,4 +544,15 @@ test "escape sequences" {
 
     try std.testing.expectEqual(1, lexer.stream.getSizeOfStream());
     try std.testing.expectEqualStrings("\\n", (try lexer.stream.getItemByReferenceOrError(0)).literal.character);
+}
+
+test "span" {
+    var lexer = Lexer.init(std.testing.allocator);
+    defer lexer.deinit();
+
+    lexer.setInputText("a bccdeef    ggag");
+    try lexer.startLexingInputText();
+
+    try std.testing.expectEqual(.identifier, lexer.stream.internal_list.items[0].getType());
+    try std.testing.expectEqual(0, lexer.stream.internal_list.items[0].identifier.span.begin);
 }
