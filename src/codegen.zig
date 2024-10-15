@@ -126,6 +126,7 @@ pub fn Vendor(comptime format_type: type) type {
         results: std.ArrayList(InstructionResult),
 
         erroneous_result: InstructionResult = undefined,
+        erroneous_token: Value = undefined,
 
         pub fn init(parent_allocator: std.mem.Allocator) Self {
             return Self{
@@ -203,6 +204,7 @@ pub fn Vendor(comptime format_type: type) type {
                             if (self.instruction_set.get(ins.name.identifier_string)) |map_item| {
                                 for (ins.parameters.items) |it| {
                                     if (it.getType() == .register and it.toRegister().getRegisterNumber() > std.math.maxInt(format_type)) {
+                                        self.erroneous_token = it;
                                         return error.RegisterNumberTooLarge;
                                     }
                                 }
