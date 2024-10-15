@@ -13,6 +13,7 @@ pub const Options = struct {
     output: []const u8 = "a.out",
     format: ?[]const u8 = null,
     stylist: bool = true,
+    strict_stylist: bool = false,
 };
 
 pub fn runManPage(allocator: anytype) void {
@@ -47,6 +48,8 @@ pub fn extractOptions(allocator: std.mem.Allocator, arg_slice: [][:0]u8) Options
             runManPage(allocator);
         } else if (std.mem.eql(u8, arg_slice[i], "--no-stylist")) {
             return_opt.stylist = false;
+        } else if (std.mem.eql(u8, arg_slice[i], "--enforce-stylist")) {
+            return_opt.strict_stylist = true;
         } else {
             if (arg_slice[i][0] == '-') {
                 errorMessage("unrecognized flag '{s}'", .{arg_slice[i]});
