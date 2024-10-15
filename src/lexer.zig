@@ -307,6 +307,7 @@ pub const Lexer = struct {
 
     pub fn consumeIdentifierThenAdd(self: *Lexer) !void {
         const beginning_of_identifier = self.getCurrentPosition();
+        const beginning_of_identifier_area = self.area.char_pos;
 
         while (self.isInRange() and self.rules.identifierMatches(self.getCurrentCharacter())) {
             self.incrementCharacterPosition();
@@ -315,7 +316,7 @@ pub const Lexer = struct {
         const span = Span{
             .begin = beginning_of_identifier,
             .end = self.getCurrentPosition(),
-            .char_begin = self.area.char_pos,
+            .char_begin = beginning_of_identifier_area,
             .line_number = self.getLineNumber(),
         };
 
