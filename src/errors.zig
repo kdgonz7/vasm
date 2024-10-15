@@ -24,7 +24,7 @@ pub const Error = struct {
 
 pub const ErrorMap = std.StringHashMap(Error);
 
-test Error {
+test "error" {
     var err0001 = Error.init("E0001");
     err0001.setMessage("Compiler out of memory");
 
@@ -32,7 +32,7 @@ test Error {
     try std.testing.expectEqualStrings("Compiler out of memory", err0001.message);
 }
 
-test ErrorMap {
+test "error map" {
     var map = ErrorMap.init(std.testing.allocator);
     defer map.deinit();
 
