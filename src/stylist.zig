@@ -158,5 +158,5 @@ test "trailing" {
 
     try std.testing.expectEqual(1, suggestions_for.items.len);
     try std.testing.expectEqual(SuggestionType.good_practice, suggestions_for.items[0].suggestion_type);
-    try std.testing.expectEqual(4, suggestions_for.items[0].suggestion_location.line_number);
+    try std.testing.expectEqual(5, suggestions_for.items[0].suggestion_location.line_number);
 }
