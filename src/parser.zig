@@ -98,7 +98,7 @@ pub const Value = union(ValueTag) {
         return self.range;
     }
 
-    pub fn toIdentifier(self: *const Value) Register {
+    pub fn toIdentifier(self: *const Value) Identifier {
         return self.identifier;
     }
 
@@ -124,6 +124,11 @@ pub const Value = union(ValueTag) {
 /// A register reference. E.g. R0, R1, R2
 pub const Register = struct {
     register_number: usize,
+    span: token_stream_z.Span = token_stream_z.Span{
+        .begin = 0,
+        .end = 0,
+        .line_number = 0,
+    },
 
     pub fn init(at_number: usize) Register {
         return Register{
@@ -548,9 +553,12 @@ pub const Parser = struct {
                     if (ident.identifier_string.len == 1) {
                         return error.RegisterMissingNumber;
                     }
+
                     const register_number = ident.identifier_string[1..];
+
                     const reg = Register{
                         .register_number = try std.fmt.parseInt(usize, register_number, 0),
+                        .span = ident.span,
                     };
 
                     return Value{
