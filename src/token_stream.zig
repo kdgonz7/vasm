@@ -24,6 +24,7 @@ pub const TokenStreamError = error{
 pub const Span = struct {
     begin: usize,
     end: usize,
+    char_begin: usize = 1,
     line_number: usize,
 };
 
@@ -42,7 +43,7 @@ pub const Identifier = struct {
         return self.identifier_string;
     }
 
-    pub fn getSpan(self: *Self) Span {
+    pub fn getSpan(self: *const Self) Span {
         return self.span;
     }
 };
