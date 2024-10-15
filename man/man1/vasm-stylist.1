@@ -1,0 +1,46 @@
+'\" t
+.\"     Title: stylist
+.\"    Author: Kai D. Gonzalez
+.\" Generator: Asciidoctor 2.0.18
+.\"      Date: 2024-10-15
+.\"    Manual: stylist
+.\"    Source: stylist
+.\"  Language: English
+.\"
+.TH "STYLIST" "1" "2024-10-15" "stylist" "stylist"
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.ss \n[.ss] 0
+.nh
+.ad l
+.de URL
+\fI\\$2\fP <\\$1>\\$3
+..
+.als MTO URL
+.if \n[.g] \{\
+.  mso www.tmac
+.  am URL
+.    ad l
+.  .
+.  am MTO
+.    ad l
+.  .
+.  LINKSTYLE blue R < >
+.\}
+.SH "STYLIST"
+stylist \- a styler for LunarRED assembly
+.SH "SYNOPSIS"
+.sp
+vasm [FILE...] [OPTIONS...]
+.SH "DESCRIPTION"
+.sp
+stylist is a program engrained in VASM designed to enforce good and compliant styles within LunarRED assembly code. The stylist program can be found in the actual vasm program and can be used to lint source code at face value.
+.SH "OPTIONS (FOR VASM)"
+.sp
+\-\-enforce\-stylist
+.RS 4
+Error when stylist reports anything wrong or suggests anything with the source code. This option is by default off and recommended to be on when working on consistent code bases.
+.RE
+.SH "AUTHOR"
+.sp
+Kai D. Gonzalez
