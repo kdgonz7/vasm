@@ -59,15 +59,31 @@ fn generateMethod(format: anytype, ctx: anytype) !void {
             var gen = codegen.Vendor(i8).init(ctx.parent_allocator);
             try drivers.openlud.vendor(&gen);
 
-            try gen.generateBinary(ctx.tree);
+            gen.generateBinary(ctx.tree) catch |err| {
+                switch (err) {
+                    error.RegisterNumberTooLarge => {
+                        compiler_output.importantMessage("{s}:{d}:{d}: {s}", .{
+                            ctx.file_name,
+                            gen.erroneous_token.toRegister().span.line_number,
+                            gen.erroneous_token.toRegister().span.begin,
+                            "register number too large",
+                        });
+
+                        compiler_output.getCustomarySourceLocationUsingLexer(
+                            ctx.lexer,
+                            gen.erroneous_token.toRegister().span.char_begin,
+                            gen.erroneous_token.toRegister().span.end,
+                            gen.erroneous_token.toRegister().span.line_number - 1,
+                        );
+                    },
+                    else => {
+                        return err;
+                    },
+                }
+            };
 
             var link = linker.Linker(i8).init(ctx.parent_allocator);
             link.linkOptimizedWithContext(drivers.openlud.ctx, &gen, gen.procedure_map) catch {
-                // switch (err) {
-                //     linker.Error.MissingStart => {
-                //         compiler_output.errorMessageWithExit("file `{s}` has no start method for format `{any}'.", .{ ctx.filepath, format });
-                //     },
-                // }
                 compiler_output.errorMessageWithExit("failed to link file '{s}'", .{ctx.file_name});
             };
 
@@ -159,6 +175,7 @@ pub fn main() !void {
             .tree = ast,
             .outfile = options.output,
             .file_name = filename,
+            .lexer = &lex,
         });
     }
 }
