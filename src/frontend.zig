@@ -62,7 +62,7 @@ fn generateMethod(format: anytype, ctx: anytype) !void {
             gen.generateBinary(ctx.tree) catch |err| {
                 switch (err) {
                     error.RegisterNumberTooLarge => {
-                        compiler_output.importantMessage("{s}:{d}:{d}: {s}", .{
+                        compiler_output.errorMessage("{s}:{d}:{d}: {s}", .{
                             ctx.file_name,
                             gen.erroneous_token.toRegister().span.line_number,
                             gen.erroneous_token.toRegister().span.begin,
@@ -117,7 +117,16 @@ pub fn main() !void {
     }
 
     for (options.files.items) |filename| {
-        const file = try std.fs.cwd().readFileAlloc(prog_allocator, filename, std.math.maxInt(usize));
+        const file = std.fs.cwd().readFileAlloc(prog_allocator, filename, std.math.maxInt(usize)) catch |err| {
+            switch (err) {
+                error.FileNotFound => {
+                    compiler_output.errorMessageWithExit("could not locate file '{s}'", .{filename});
+                },
+                else => {
+                    compiler_output.errorMessageWithExit("something went wrong when reading file '{s}'. ({any})", .{ filename, err });
+                },
+            }
+        };
 
         lex.setInputText(file);
 
