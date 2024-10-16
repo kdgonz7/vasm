@@ -1,42 +1,134 @@
 const std = @import("std");
+const tty = std.io.tty;
+
 const lexer = @import("lexer.zig");
 const compiler_status = @import("compiler_status.zig");
 
-/// Prints a bolded message in `format` using the `Writer.print` method.
-pub fn importantMessage(comptime format: []const u8, args: anytype) void {
-    const stdout = std.io.getStdOut().writer();
+//TODO: lookie here pal, it's probably wednesday at the time you see this.
+// it's almost 10:00 pm and im gonna stop working on this, it's burning me out for the night
+// so far i've created this shiny new REPORTER class which manages the stdout and stderr configs to print
+// colored messages to the console using std.io.tty.Config
+// we've still got to migrate the lexer source location function into the reporter class and still have to
+// rewrite the frontend to fit the new API. see the frontend.zig file if you don't know what I mean.
 
-    stdout.print("\x1b[1m", .{}) catch unreachable;
-    stdout.print(format, args) catch unreachable;
-    stdout.print("\x1b[0m", .{}) catch unreachable;
-    stdout.print("\n", .{}) catch unreachable;
-}
+/// Manages standard error and standard output files. Prints in color cross platform.
+pub const Reporter = struct {
+    stdout: std.fs.File,
+    stderr: std.fs.File,
+    stdout_config: tty.Config = undefined,
+    stderr_config: tty.Config = undefined,
 
-/// Prints an error message also using the `stderr.writer().print` function.
-pub fn errorMessage(comptime format: []const u8, args: anytype) void {
-    const stderr = std.io.getStdErr().writer();
+    pub fn init() Reporter {
+        var rep: Reporter = .{
+            .stderr = std.io.getStdErr(),
+            .stdout = std.io.getStdOut(),
+        };
 
-    stderr.print("vasm: \x1b[31;1merror: \x1b[0;1m", .{}) catch unreachable;
-    stderr.print(format, args) catch unreachable;
-    stderr.print("\x1b[0m", .{}) catch unreachable;
-    stderr.print("\n", .{}) catch unreachable;
-}
+        rep.stdout_config = tty.detectConfig(rep.stdout);
+        rep.stderr_config = tty.detectConfig(rep.stderr);
 
-pub fn errorMessageWithExit(comptime format: []const u8, args: anytype) noreturn {
-    const stderr = std.io.getStdErr().writer();
+        return rep;
+    }
 
-    stderr.print("vasm: \x1b[31;1mfatal error: \x1b[0;1m", .{}) catch unreachable;
-    stderr.print(format, args) catch unreachable;
-    stderr.print("\x1b[0m", .{}) catch unreachable;
-    stderr.print("\n", .{}) catch unreachable;
+    pub fn setStdoutColor(self: *Reporter, color: tty.Color) void {
+        self.stdout_config.setColor(self.stdout.writer(), color) catch unreachable;
+    }
 
-    std.process.exit(1);
-}
+    pub fn setStderrColor(self: *Reporter, color: tty.Color) void {
+        self.stderr_config.setColor(self.stderr.writer(), color) catch unreachable;
+    }
 
-pub fn message(comptime format: []const u8, args: anytype) void {
-    const stderr = std.io.getStdErr().writer();
-    stderr.print(format, args) catch unreachable;
-}
+    pub fn importantMessage(self: *Reporter, comptime format: []const u8, args: anytype) void {
+        var writer = self.stdout.writer();
+
+        self.setStdoutColor(.bold);
+
+        writer.print(format, args) catch unreachable;
+
+        self.setStdoutColor(.reset);
+
+        writer.print("\n", .{}) catch unreachable;
+    }
+
+    pub fn errorMessage(self: *Reporter, comptime format: []const u8, args: anytype) void {
+        const wri = self.stderr.writer();
+
+        wri.print("vasm: ", .{}) catch unreachable;
+        self.setStderrColor(.bold);
+        self.setStderrColor(.red);
+
+        wri.print("fatal error: ", .{}) catch unreachable;
+
+        self.setStderrColor(.reset);
+        self.setStderrColor(.bold);
+
+        wri.print(format, args) catch unreachable;
+        wri.print("\n", .{}) catch unreachable;
+
+        self.setStderrColor(.reset);
+    }
+
+    /// Prints error `err` and tries to get the source location using the lexer `lex`.
+    pub fn printError(lex: *lexer.Lexer, filename: []const u8, err: anyerror) noreturn {
+        switch (err) {
+            error.UnexpectedToken => {
+                errorMessage("{s}:{d}:{d}: unexpected token `{c}'", .{
+                    filename,
+                    lex.getLineNumber(),
+                    lex.area.char_pos,
+                    lex.getCurrentCharacter(),
+                });
+
+                getSourceLocation(lex, .suggestion);
+            },
+
+            else => {},
+        }
+
+        std.process.exit(1);
+    }
+
+    pub fn astError(self: *Reporter, err: anytype, lex: lexer.Lexer) noreturn {
+        _ = lex;
+
+        self.errorMessage("ast error {any}", .{err});
+        std.process.exit(1);
+    }
+
+    pub fn getCustomarySourceLocationUsingLexer(self: *Reporter, existing_lexer: anytype, begin: anytype, end: anytype, line_number: anytype) void {
+        var lines = existing_lexer.*.splitInputTextIntoLines();
+        var i: usize = 0;
+
+        while (lines.next()) |line| {
+            if (i == line_number) {
+                const stderr = self.stderr.writer();
+
+                stderr.print("{d: <8}| {s}\n", .{ line_number, std.mem.trim(u8, line, " \t \n") }) catch unreachable;
+                stderr.print("  ", .{}) catch unreachable;
+
+                for (0..begin) |_| {
+                    stderr.print(" ", .{}) catch unreachable;
+                }
+
+                self.setStderrColor(.red);
+
+                stderr.print("^", .{}) catch unreachable;
+
+                for (0..end - begin) |_| {
+                    stderr.print("~", .{}) catch unreachable;
+                }
+
+                self.setStderrColor(.reset);
+
+                stderr.print("\n", .{}) catch unreachable;
+
+                break;
+            }
+
+            i += 1;
+        }
+    }
+};
 
 pub fn getSourceLocation(lexer_state: *lexer.Lexer, status: compiler_status.Status) void {
     var lines = lexer_state.splitInputTextIntoLines();
@@ -76,56 +168,4 @@ pub fn getSourceLocation(lexer_state: *lexer.Lexer, status: compiler_status.Stat
 
         i += 1;
     }
-}
-
-pub fn getCustomarySourceLocationUsingLexer(existing_lexer: anytype, begin: anytype, end: anytype, line_number: anytype) void {
-    var lines = existing_lexer.splitInputTextIntoLines();
-    var i: usize = 0;
-
-    while (lines.next()) |line| {
-        if (i == line_number) {
-            const stderr = std.io.getStdErr().writer();
-
-            stderr.print("{d: <8}| {s}\n", .{ line_number, std.mem.trim(u8, line, " \t \n") }) catch unreachable;
-            stderr.print("  ", .{}) catch unreachable;
-
-            for (0..begin) |_| {
-                stderr.print(" ", .{}) catch unreachable;
-            }
-
-            // try and match the color with status
-            const color: []const u8 = "\x1b[33;1m";
-
-            // print a line where the error happens
-            stderr.print("{s}^", .{color}) catch unreachable;
-            for (0..end - begin) |_| {
-                stderr.print("~", .{}) catch unreachable;
-            }
-            stderr.print("\x1b[0m\n", .{}) catch unreachable;
-
-            break;
-        }
-
-        i += 1;
-    }
-}
-
-/// Prints error `err` and tries to get the source location using the lexer `lex`.
-pub fn printError(lex: *lexer.Lexer, filename: []const u8, err: anyerror) noreturn {
-    switch (err) {
-        error.UnexpectedToken => {
-            errorMessage("{s}:{d}:{d}: unexpected token `{c}'", .{
-                filename,
-                lex.getLineNumber(),
-                lex.area.char_pos,
-                lex.getCurrentCharacter(),
-            });
-
-            getSourceLocation(lex, .suggestion);
-        },
-
-        else => {},
-    }
-
-    std.process.exit(1);
 }
