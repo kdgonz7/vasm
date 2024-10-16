@@ -22,7 +22,7 @@
         {
             "label": "Build",
             "type": "shell",
-            "command": "make",
+            "command": "make app",
             "problemMatcher": [
                 "$zig"
             ],
