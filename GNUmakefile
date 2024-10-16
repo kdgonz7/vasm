@@ -16,7 +16,7 @@ tests-summary:
 	zig build tests --summary all
 
 app:
-	zig build
+	zig build --summary all
 
 vasm.adoc:
 	mkdir -p man/man1
