@@ -511,9 +511,8 @@ pub const Parser = struct {
         while (!self.streamIsAtEnd()) {
             const current = try self.getCurrentToken();
 
-            // if there's a semicolon
-            if ((current.getType() == .operator) and (current.operator.kind == .semicolon or current.operator.kind == .newline)) {
-                // self.incrementCurrentPosition();
+            // if there's a newline operator, break out of parameter list
+            if ((current.getType() == .operator) and (current.operator.kind == .newline)) {
                 return node;
             }
 
@@ -530,8 +529,8 @@ pub const Parser = struct {
                 break;
             }
 
-            self.incrementCurrentPosition();
-            self.incrementCurrentPosition();
+            self.incrementCurrentPosition(); // iterate the comma
+            self.incrementCurrentPosition(); // past that, next argument
         }
 
         return node;
