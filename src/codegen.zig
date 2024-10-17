@@ -199,7 +199,6 @@ pub fn Vendor(comptime format_type: type) type {
                             // that instruction has been expanded once and is in use
                             try self.peephole_optimizer.remember(ins.name.identifier_string);
                         } else {
-
                             // built in instruction
                             if (self.instruction_set.get(ins.name.identifier_string)) |map_item| {
                                 for (ins.parameters.items) |it| {
