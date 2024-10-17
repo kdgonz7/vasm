@@ -179,7 +179,7 @@ test "creating and using a linker to create a usable binary" {
     defer link.deinit();
     defer arena.deinit();
 
-    const root = try createNodeFrom(allocatir, "_start: move;");
+    const root = try createNodeFrom(allocatir, "_start: move\n");
 
     try vend1.implementInstruction("move", &mov_ins);
     try vend1.generateBinary(root);
@@ -208,7 +208,7 @@ test "creating and using a linker to create a usable binary w/ procedures using 
     defer link.deinit();
     defer arena.deinit();
 
-    const root = try createNodeFrom(allocatir, "a: move;");
+    const root = try createNodeFrom(allocatir, "a: move\n");
 
     try vend1.implementInstruction("move", &mov_ins);
     try vend1.generateBinary(root);
@@ -240,7 +240,7 @@ test "creating and using a linker to create a usable binary w/ procedures using 
     defer link.deinit();
     defer arena.deinit();
 
-    const root = try createNodeFrom(allocatir, "a: move;");
+    const root = try createNodeFrom(allocatir, "a: move\n");
 
     try vend1.implementInstruction("move", &mov_ins);
     try vend1.generateBinary(root);
@@ -274,7 +274,7 @@ test "creating and using a linker to create a usable binary and writing it to a 
     defer link.deinit();
     defer arena.deinit();
 
-    const root = try createNodeFrom(allocatir, "a: move;");
+    const root = try createNodeFrom(allocatir, "a: move\n");
 
     try vend1.implementInstruction("move", &mov_ins);
     try vend1.generateBinary(root);
@@ -310,7 +310,7 @@ test "creating and using a linker using linkOptimized" {
     defer link.deinit();
     defer arena.deinit();
 
-    const root = try createNodeFrom(allocatir, "a: move;");
+    const root = try createNodeFrom(allocatir, "a: move\n");
 
     try vend1.implementInstruction("move", &mov_ins);
     try vend1.generateBinary(root);
