@@ -324,7 +324,7 @@ test "creating and using a vendor with 0 argument function and two statements" {
     var mov_ins = Instruction(i32).init("mov", &movInstructionTest);
     try sibc.implementInstruction("mov", &mov_ins);
 
-    const root = try createNodeFrom(allocatir, "a: mov; mov");
+    const root = try createNodeFrom(allocatir, "a: mov\nmov");
 
     try sibc.generateBinary(root);
     try std.testing.expect(sibc.procedure_map.get("a") != null);
@@ -341,7 +341,7 @@ test "creating and using a vendor with 0 argument functions, one calling the oth
     var mov_ins = Instruction(i32).init("mov", &movInstructionTest);
     try sibc.implementInstruction("mov", &mov_ins);
 
-    const root = try createNodeFrom(allocatir, "a: mov; mov;\nb: a;");
+    const root = try createNodeFrom(allocatir, "a: mov\nmov\n\nb: a\n");
 
     try sibc.generateBinary(root);
     try std.testing.expect(sibc.procedure_map.get("a") != null);
@@ -398,7 +398,7 @@ test "dead code elimination" {
     var one_ins = Instruction(i32).init("one", &oneArgumentInstruction);
     try sample_vendor.implementInstruction("one", &one_ins);
 
-    const root = try createNodeFrom(allocatir, "a: one 0x0A; b: one 0x0A; _start: a; ");
+    const root = try createNodeFrom(allocatir, "a: one 0x0A\n b: one 0x0A\n _start: a\n ");
 
     try sample_vendor.generateBinary(root);
 
