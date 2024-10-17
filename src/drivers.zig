@@ -32,7 +32,7 @@ test "populate vendor using openlud" {
 
     try openlud.vendor(&vend1);
 
-    var root = try ast(allocator, "b: echo 'A'\n_start: b;");
+    var root = try ast(allocator, "b: echo 'A'\n_start: b\n");
 
     try std.testing.expectEqual(2, root.asRoot().getChildrenAmount());
 
@@ -57,7 +57,7 @@ test "populate vendor using openlud program 2" {
 
     try openlud.vendor(&vend1);
 
-    var root = try ast(allocator, "_start: init R1; mov R1,65; each R1;");
+    var root = try ast(allocator, "_start: init R1\n mov R1,65\n each R1\n");
 
     try std.testing.expectEqual(1, root.asRoot().getChildrenAmount());
 
