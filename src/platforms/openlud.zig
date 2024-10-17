@@ -13,6 +13,8 @@
 /// limited, as it is a standard, it is meant to be used in more constrainted environments
 /// with a less memory consuming program.
 ///
+/// VASM can compile headless OpenLUD files.
+///
 /// ### Specs
 ///
 /// * 8-bit
