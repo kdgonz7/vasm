@@ -220,18 +220,7 @@ pub const Lexer = struct {
             },
 
             ';' => {
-                self.incrementCharacterPosition();
-
-                if (self.getCurrentPosition() < self.input_text.len and self.getCurrentCharacter() == ';') {
-                    try self.consumeComment();
-                } else {
-                    try self.stream.addOne(Token{
-                        .operator = Operator{
-                            .kind = .semicolon,
-                            .position = self.getCurrentPosition(),
-                        },
-                    });
-                }
+                try self.consumeComment();
             },
 
             '\n' => {
