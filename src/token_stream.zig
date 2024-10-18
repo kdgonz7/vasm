@@ -102,6 +102,30 @@ pub const Literal = struct {
             .character = with_char,
         };
     }
+
+    pub fn toCharacter(self: *const Literal) u8 {
+        switch (self.character[0]) {
+            '\\' => {
+                switch (self.character[1]) {
+                    'n' => {
+                        return '\n';
+                    },
+                    't' => {
+                        return '\t';
+                    },
+                    'r' => {
+                        return '\r';
+                    },
+                    else => {
+                        @panic("add more escape sequences (TODO)");
+                    },
+                }
+            },
+            else => {
+                return self.character[0];
+            },
+        }
+    }
 };
 
 pub const TokenTag = enum {
