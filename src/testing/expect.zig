@@ -7,7 +7,6 @@ const instruction_result = @import("../instruction_result.zig");
 const linker = @import("../linker.zig");
 const lexer = @import("../lexer.zig");
 
-/// TODO: runtime should be an fn(vendor(T))
 pub fn expectBin(comptime T: type, text: []const u8, bin: []const T, ctx: anytype, runtime: anytype) !void {
     var arena = std.heap.ArenaAllocator.init(std.testing.allocator);
     const allocator = arena.allocator();
