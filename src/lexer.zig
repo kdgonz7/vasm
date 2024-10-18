@@ -354,8 +354,6 @@ pub const Lexer = struct {
 
         while (self.isInRange() and self.getCurrentCharacter() != '\'') {
             if (self.getCurrentCharacter() == '\\') {
-                // TODO: check for literal escape sequences like \x that have
-                // multiple characters
                 self.incrementCharacterPosition();
             }
 
