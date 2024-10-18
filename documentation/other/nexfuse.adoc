@@ -14,7 +14,7 @@ The NexFUSE novelty is to be usable, and to get to that point with as little ste
 as possible. That is why NexFUSE is manually managed, meaning that each free and create call is explicity stated
 in the code instead of hidden behind different allocations and hidden frees.
 
-== Architecture
+=== Architecture
 
 The NexFUSE instruction set contains around 20 instructions, each one performing either
 a read or write on data, analysis, or clocking. NexFUSE, unlike OpenLUD, is more expansive,
@@ -24,17 +24,19 @@ NexFUSE roughly has 65-70% of ABI compatibility with OpenLUD, meaning that a lar
 can be ran with NexFUSE and OpenLUD, however, more comprehensive and non-standard programs need to be ran
 with their respective interfaces.
 
-== VASM Interface
+=== VASM Interface
 
 VASM compiles LR Assembly directly into NexFUSE with two context options:
+
 * Folded
 * Non-Folded
+
 With folded programs, performance can be higher, however, a lot of the logical expansions of NexFUSE are limited due
 to the compiler having no awareness of the program's state or processes. Non-Folded programs create procedure headers
 for each instruction set with dead code elimination optimizations still in place. Those must forcefully be disabled
 via flags and options that can be found in `frontend.zig` and `compiler_main.zig`.
 
-== Big Registers
+=== Big Registers
 
 NexFUSE has a concept of *big registers*, which is data that is stored separately from the unsigned bytes and stored as 32-bit integers. (platform-dependent) Instructions like `LAR` are designed to deal with big registers. `LAR` prints out each number in a big register, `ADD` can add up all integers in a register and put them into a big register (not a regular sized one) as it would potentially not fit the result of the sum of the data inside of the register.
 
