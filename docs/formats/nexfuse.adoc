@@ -60,3 +60,7 @@ _start:
     add R1, R1 ; R1 now has 30. However, R1 in the small stack space remains unchanged
 
 -------
+
+== Specs
+
+NexFUSE is an 8-bit binary format.

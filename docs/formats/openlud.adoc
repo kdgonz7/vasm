@@ -18,4 +18,5 @@ with a less memory consuming program.
 VASM can compile headless OpenLUD files. This means that they can be deficit of a `_start` method which will simply remove any code provided by it.
 
 ### Specs
-* 8-bit
+
+OpenLUD is an 8-bit register-based virtual machine platform.
