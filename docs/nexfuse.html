@@ -2468,8 +2468,11 @@ The NexFUSE novelty is to be usable, and to get to that point with as little ste
 as possible. That is why NexFUSE is manually managed, meaning that each free and create call is explicity stated
 in the code instead of hidden behind different allocations and hidden frees.</p>
 </div>
-<div class="sect2">
-<h3 id="_architecture">Architecture</h3>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_architecture">Architecture</h2>
+<div class="sectionbody">
 <div class="paragraph">
 <p>The NexFUSE instruction set contains around 20 instructions, each one performing either
 a read or write on data, analysis, or clocking. NexFUSE, unlike OpenLUD, is more expansive,
@@ -2480,8 +2483,10 @@ can be ran with NexFUSE and OpenLUD, however, more comprehensive and non-standar
 with their respective interfaces.</p>
 </div>
 </div>
-<div class="sect2">
-<h3 id="_vasm_interface">VASM Interface</h3>
+</div>
+<div class="sect1">
+<h2 id="_vasm_interface">VASM Interface</h2>
+<div class="sectionbody">
 <div class="paragraph">
 <p>VASM compiles LR Assembly directly into NexFUSE with two context options:</p>
 </div>
@@ -2502,8 +2507,10 @@ for each instruction set with dead code elimination optimizations still in place
 via flags and options that can be found in <code>frontend.zig</code> and <code>compiler_main.zig</code>.</p>
 </div>
 </div>
-<div class="sect2">
-<h3 id="_big_registers">Big Registers</h3>
+</div>
+<div class="sect1">
+<h2 id="_big_registers">Big Registers</h2>
+<div class="sectionbody">
 <div class="paragraph">
 <p>NexFUSE has a concept of <strong>big registers</strong>, which is data that is stored separately from the unsigned bytes and stored as 32-bit integers. (platform-dependent) Instructions like <code>LAR</code> are designed to deal with big registers. <code>LAR</code> prints out each number in a big register, <code>ADD</code> can add up all integers in a register and put them into a big register (not a regular sized one) as it would potentially not fit the result of the sum of the data inside of the register.</p>
 </div>
@@ -2530,10 +2537,9 @@ _start:
 </div>
 </div>
 </div>
-</div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2024-10-18 19:20:17 -0400
+Last updated 2024-10-18 19:30:48 -0400
 </div>
 </div>
 </body>
