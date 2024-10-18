@@ -336,8 +336,6 @@ pub const Lexer = struct {
 
         const number_token = Token{
             .number = Number{
-                // TODO: parseInt can only ever return Invalid and Overflowed,
-                // keeping this for now.
                 .number = std.fmt.parseInt(i64, body, 0) catch {
                     return error.MalformedNumber;
                 },
