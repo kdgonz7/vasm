@@ -96,6 +96,8 @@ pub fn runtime(vend: *codegen.Vendor(u8)) !void {
     try vend.createAndImplementInstruction(u8, "get", &getIns);
     try vend.createAndImplementInstruction(u8, "add", &addIns);
     try vend.createAndImplementInstruction(u8, "nop", &nopIns);
+    try vend.createAndImplementInstruction(u8, "lar", &larIns);
+    try vend.createAndImplementInstruction(u8, "lsl", &lslIns);
 }
 
 //TODO: add type checks for all of these instructions
@@ -272,8 +274,54 @@ pub fn nopIns(
 }
 
 // TODO: finish
-// pub fn larIns(generator: anytype, vendor: anytype, args: anytype) !void {}
-// pub fn lslIns(generator: anytype, vendor: anytype, args: anytype) !void {}
+pub fn larIns(
+    gen: *codegen.Generator(u8),
+    vend: *codegen.Vendor(u8),
+    args: []parser.Value,
+) Return {
+    _ = vend;
+
+    const register = args[0].toRegister();
+
+    try gen.append(48);
+    try gen.append(@intCast(register.getRegisterNumber()));
+
+    return .ok;
+}
+
+pub fn lslIns(
+    gen: *codegen.Generator(u8),
+    vend: *codegen.Vendor(u8),
+    args: []parser.Value,
+) Return {
+    _ = vend;
+
+    const register = args[0].toRegister();
+
+    try gen.append(49);
+    try gen.append(@intCast(register.getRegisterNumber()));
+
+    // iterate past register arg
+    for (1..args.len) |i| {
+        switch (args[i]) {
+            // add number and gen
+            .number => |number| {
+                try gen.append(@intCast(number.getNumber()));
+            },
+
+            .literal => |literal| {
+                try gen.append(@intCast(literal.toCharacter()));
+            },
+
+            else => {
+                return Result.otherError("object is not int-like");
+            },
+        }
+    }
+
+    return .ok;
+}
+
 // pub fn inIns(generator: anytype, vendor: anytype, args: anytype) !void {}
 // pub fn cmpIns(generator: anytype, vendor: anytype, args: anytype) !void {}
 // pub fn incIns(generator: anytype, vendor: anytype, args: anytype) !void {}
@@ -474,6 +522,26 @@ test {
             22, // END
         },
         ctx_no_folding_compile,
+        runtime,
+    );
+}
+
+test {
+    try expectBin(
+        u8,
+        "_start:\n   zeroall\n   put R1,65,3\n   lar R1,",
+        &[_]u8{ 44, 0, 45, 1, 65, 3, 0, 48, 1, 0, 22 },
+        ctx_folding,
+        runtime,
+    );
+}
+
+test {
+    try expectBin(
+        u8,
+        "_start:\n   lsl R1,'A','B','C',\n",
+        &[_]u8{ 49, 1, 65, 66, 67, 0, 22 },
+        ctx_folding,
         runtime,
     );
 }
