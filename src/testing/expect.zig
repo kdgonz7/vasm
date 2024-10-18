@@ -23,6 +23,9 @@ pub fn expectBin(comptime T: type, text: []const u8, bin: []const T, ctx: anytyp
     try link.linkUnOptimizedWithContext(ctx, vend1.procedure_map);
 
     if (link.binary.items.len == 0 and bin.len == 0) return;
+    if (link.binary.items.len != bin.len) {
+        std.debug.print("{any} | {any}", .{ link.binary.items, bin });
+    }
     try std.testing.expectEqual(bin.len, link.binary.items.len);
 
     for (0..link.binary.items.len) |i| {
