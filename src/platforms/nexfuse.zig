@@ -95,6 +95,7 @@ pub fn runtime(vend: *codegen.Vendor(u8)) !void {
     try vend.createAndImplementInstruction(u8, "put", &putIns);
     try vend.createAndImplementInstruction(u8, "get", &getIns);
     try vend.createAndImplementInstruction(u8, "add", &addIns);
+    try vend.createAndImplementInstruction(u8, "nop", &nopIns);
 }
 
 //TODO: add type checks for all of these instructions
@@ -258,6 +259,18 @@ pub fn addIns(
     return .ok;
 }
 
+pub fn nopIns(
+    gen: *codegen.Generator(u8),
+    vend: *codegen.Vendor(u8),
+    args: []parser.Value,
+) Return {
+    _ = vend;
+    _ = gen;
+    _ = args;
+
+    return .ok;
+}
+
 // TODO: finish
 // pub fn larIns(generator: anytype, vendor: anytype, args: anytype) !void {}
 // pub fn lslIns(generator: anytype, vendor: anytype, args: anytype) !void {}
@@ -275,6 +288,18 @@ test {
         "_start: echo 'A'",
         &[_]u8{
             40, 65, 0, 22,
+        },
+        ctx_folding,
+        runtime,
+    );
+}
+
+test {
+    try expectBin(
+        u8,
+        "_start: nop",
+        &[_]u8{
+            0, 22,
         },
         ctx_folding,
         runtime,
