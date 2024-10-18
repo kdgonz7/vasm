@@ -5,8 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 2.0.23">
-<meta name="author" content="v1.0.0">
-<title>NexFUSE</title>
+<title>VASM</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /*! Asciidoctor default stylesheet | MIT License | https://asciidoctor.org */
@@ -435,90 +434,37 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 @media amzn-kf8{#header,#content,#footnotes,#footer{padding:0}}
 </style>
 </head>
-<body class="book">
+<body class="article">
 <div id="header">
-<h1>NexFUSE</h1>
-<div class="details">
-<span id="author" class="author">v1.0.0</span><br>
-<span id="revdate">Kai D. Gonzalez</span>
-</div>
+<h1>VASM</h1>
 </div>
 <div id="content">
-<div class="sect1">
-<h2 id="_introduction">Introduction</h2>
+<div id="preamble">
 <div class="sectionbody">
 <div class="paragraph">
-<p>NexFUSE is a bytecode format designed to be efficient and a drop-in low memory replacement
-for <em>OPENLUD</em> binaries. NexFUSE works by keeping an instruction pointer to
-an instruction address and incrementing it, parsing each opcode and running its respective
-functionality. NexFUSE would then be replaced by the brand-new "MercuryPIC" format, that supported
-8-bit to 32-bit architectures and cleaned up a lot of the procedural mess NexFUSE left behind.
-The NexFUSE novelty is to be usable, and to get to that point with as little steps and commands
-as possible. That is why NexFUSE is manually managed, meaning that each free and create call is explicity stated
-in the code instead of hidden behind different allocations and hidden frees.</p>
+<p>VASM is a compiler designed to provide safe development for programs and compiles under multiple formats.</p>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_architecture">Architecture</h2>
+<h2 id="_contents">Contents</h2>
 <div class="sectionbody">
-<div class="paragraph">
-<p>The NexFUSE instruction set contains around 20 instructions, each one performing either
-a read or write on data, analysis, or clocking. NexFUSE, unlike OpenLUD, is more expansive,
-and, albeit not Turing-complete, strives to provide as many abstractions and gates for logic
-as possible with the knowledge at the time it was created.
-NexFUSE roughly has 65-70% of ABI compatibility with OpenLUD, meaning that a large portion of programs
-can be ran with NexFUSE and OpenLUD, however, more comprehensive and non-standard programs need to be ran
-with their respective interfaces.</p>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_vasm_interface">VASM Interface</h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>VASM compiles LR Assembly directly into NexFUSE with two context options:
-* Folded
-* Non-Folded
-With folded programs, performance can be higher, however, a lot of the logical expansions of NexFUSE are limited due
-to the compiler having no awareness of the program&#8217;s state or processes. Non-Folded programs create procedure headers
-for each instruction set with dead code elimination optimizations still in place. Those must forcefully be disabled
-via flags and options that can be found in <code>frontend.zig</code> and <code>compiler_main.zig</code>.</p>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_big_registers">Big Registers</h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>NexFUSE has a concept of <strong>big registers</strong>, which is data that is stored separately from the unsigned bytes and stored as 32-bit integers. (platform-dependent) Instructions like <code>LAR</code> are designed to deal with big registers. <code>LAR</code> prints out each number in a big register, <code>ADD</code> can add up all integers in a register and put them into a big register (not a regular sized one) as it would potentially not fit the result of the sum of the data inside of the register.</p>
-</div>
-<div class="paragraph">
-<p>The reason for big registers is so larger numbers are able to be stored with little to no conflict with the byte-sized information that is continually passed between existing registers, however, they are still different and data can not be safely passed between fast-access registers and big registers. To pass data between big registers and regular ones without truncating, you must keep a copy of the original data and only add the data into a big register when the representation gets larger than 255 (the standard size for a character/unsigned byte)</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlight"><code class="language-asm" data-lang="asm">; Big registers are a NexFUSE-specific feature ONLY.
-; they allow for certain things like assignment to the same register twice
-; as the register exists in two different "worlds"
-_start:
-    ; clear all registers
-    zeroall
-
-    mov R1,5 ; add 5 to R1 (small stack space)
-    mov R1,10 ; add 10 to R1 (small stack space)
-    mov R1,15 ; add 15 to R1 (small stack space)
-
-    add R1, R2 ; R2 now has 30
-    add R1, R1 ; R1 now has 30. However, R1 in the small stack space remains unchanged</code></pre>
-</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="./nexfuse.html">NexFUSE</a></p>
+</li>
+<li>
+<p><a href="./mercury.html">MercuryPIC</a></p>
+</li>
+</ul>
 </div>
 </div>
 </div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2024-10-17 21:00:53 -0400
+Last updated 2024-10-18 18:57:22 -0400
 </div>
 </div>
 </body>
