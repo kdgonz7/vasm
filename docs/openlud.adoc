@@ -1,0 +1,21 @@
+= OpenLUD
+
+== Introduction
+
+OpenLUD is a binary bytecode format that was originally a test of how bytecode and binary worked under the hood. The project's name, OpenLUD, is a play on words from the original "OpenBSD" operating system. OpenLUD is an 8-bit virtual architecture designed for memory safety and stability. OpenLUD holds a maximum of
+65536 bytes of information, stored in registers.
+
+There was no compiler for OpenLUD originally until the LunarRED legacy compiler came out designed to compile into this and the NexFUSE bytecode formats. The OpenLUD OBI is no longer maintained, however still used as a reference and withholds an old standard with many practices still being used in other bytecode runtimes.
+
+### Architecture
+
+The instruction set is very small (standing around >11 instructions) and
+limited, as it is a standard, it is meant to be used in more constrainted environments
+with a less memory consuming program.
+
+### Headless
+
+VASM can compile headless OpenLUD files. This means that they can be deficit of a `_start` method which will simply remove any code provided by it.
+
+### Specs
+* 8-bit
