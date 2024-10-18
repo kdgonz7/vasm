@@ -26,10 +26,10 @@ vasm.adoc:
 stylist.adoc:
 	mkdir -p man/man1
 	$(ASCIIDOCTOR) -b $(FORMAT) documentation/stylist.adoc -o man/man1/vasm-stylist.1
+
 vasm-research:
 	mkdir -p docs/
-	$(ASCIIDOCTOR) -b $(WEB_FORMAT) documentation/other/*
-	mv -v documentation/other/*.html docs/
+	$(ASCIIDOCTOR) -b $(WEB_FORMAT) docs/*.adoc
 
 doc: vasm.adoc stylist.adoc
 
