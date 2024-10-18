@@ -1,0 +1,10 @@
+= VASM
+
+VASM is a compiler into various binary formats.
+
+VASM, in short, provides generation through *vendors*, vendors allow for platform-specific headers by essentially acting as a middleware runtime between the original top-level source code and low level virtual machine instruction set. Multiple architectures with their own respective sizes can be emitted, with little to no truncating needed. VASM also has support for managing data _sizes_ to prevent issues with numbers being too big, and catching mistakes at compile-time.
+
+== Other Pages
+
+* link:./nexfuse.html[NexFUSE]
+* link:./mercury.html[MercuryPIC]

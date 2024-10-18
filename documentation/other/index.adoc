@@ -1,8 +1,0 @@
-= VASM
-
-VASM is a compiler designed to provide safe development for programs and compiles under multiple formats.
-
-== Contents
-
-* link:./nexfuse.html[NexFUSE]
-* link:./mercury.html[MercuryPIC]
