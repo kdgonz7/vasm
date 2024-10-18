@@ -513,6 +513,18 @@ test "using literals in a simple expression" {
     try std.testing.expectEqualStrings("a", (try lexer.stream.getItemByReferenceOrError(0)).literal.character);
 }
 
+test "using literals in complex cases" {
+    var lexer = Lexer.init(std.testing.allocator);
+    defer lexer.deinit();
+
+    lexer.setInputText("'a','b','c'");
+    try lexer.startLexingInputText();
+    try std.testing.expectEqual(5, lexer.stream.getSizeOfStream());
+    try std.testing.expectEqualStrings("a", (try lexer.stream.getItemByReferenceOrError(0)).literal.character);
+    try std.testing.expectEqualStrings("b", (try lexer.stream.getItemByReferenceOrError(2)).literal.character);
+    try std.testing.expectEqualStrings("c", (try lexer.stream.getItemByReferenceOrError(4)).literal.character);
+}
+
 test "erroneous literal" {
     var lexer = Lexer.init(std.testing.allocator);
     defer lexer.deinit();
