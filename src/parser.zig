@@ -60,8 +60,6 @@ pub const ParseError = error{
 
 pub const ValueTag = enum {
     /// An identifier. See `token_stream.zig`
-    /// TODO: could potentially be unused. Do
-    /// a double take to make sure this has an actual use
     identifier,
 
     /// A number. See `token_stream.zig`
