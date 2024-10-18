@@ -14,6 +14,6 @@ VASM, in short, provides generation through *vendors*, vendors allow for platfor
 
 === Binary Formats
 
-* link:./nexfuse.html[NexFUSE]
-* link:./mercury.html[MercuryPIC]
-* link:./openlud.html[OpenLUD]
+* link:./formats/nexfuse.html[NexFUSE]
+* link:./formats/mercury.html[MercuryPIC]
+* link:./formats/openlud.html[OpenLUD]
