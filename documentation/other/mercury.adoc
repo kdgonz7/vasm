@@ -1,0 +1,30 @@
+= MercuryPIC
+v1.0.0
+Kai D. Gonzalez
+:doctype: book
+
+== Introduction
+
+MecuryPIC (Mercury's Position Independent Code) is a bytecode format designed to fix the memory problems that NexFUSE has. Being based on the NexFUSE codebase, MPIC focuses more on memory attentiveness and streamlining the allocation/deallocation process in order to create a usable and fast runtime. In mission-critical programs the difference between NexFUSE and MPIC is large.
+
+"The Better NexFUSE", however, is not a fitting name for the MPIC binary format as it contains *differing line endings* to NexFUSE that diminish a majority of its compatibility with the original NexFUSE format. In NexFUSE the statement terminator byte is **00**, (as it was in _OpenLUD_, the system that came before it) however, in MPIC the statement terminator is *0xAF*. This design choice is unknown and, since the codebase is about 70% based on NexFUSE, unexpected.
+
+Ultimately both NexFUSE and MercuryPIC are formats designed to better the OpenLUD testing format for binaries and expand on a new faster VM that is safe and predictable for general purpose programs.
+
+== Multithreading
+
+MPIC has support for mutex-style access via *locks*. Locks are designed to be simple and provide a reader-writer hierarchy for concurrent programs. MPIC by nature can prevent race conditions, however, can not prevent deadlocks.
+
+[source,text]
+-----
+
+Register 1 -> [0 0 0 0 0 ...]
+
+Prog1 -> Access Register 1 (Lock)
+    Prog1 Sub -> Access Register 1 (Gets denied, returns error because the permission is denied)
+
+-----
+
+== Architecture
+
+The MPIC architecture is primarily an 8-bit codebase based on the NexFUSE bytecode format, however, MPIC added experimental 32-bit support in a separate branch which allows for larger amounts of data to be stored as a whole instead of fragments, like seen in NexFUSE and OpenLUD.
