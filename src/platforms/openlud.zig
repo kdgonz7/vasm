@@ -1,24 +1,24 @@
-/// ## OpenLUD
-///
-/// OpenLUD is an 8-bit virtual architecture designed for memory safety and stability. OpenLUD holds a maximum of
-/// 65536 bytes of information, stored in registers. There was no compiler for OpenLUD originally until the LunarRED
-/// legacy compiler came out designed to compile into this and the NexFUSE bytecode formats.
-///
-/// The OpenLUD OBI is no longer maintained, however still used as a reference and withholds an old standard
-/// with many practices still being used in modern programs.
-///
-/// ### Architecture
-///
-/// The instruction set is very small (standing around >11 instructions) and
-/// limited, as it is a standard, it is meant to be used in more constrainted environments
-/// with a less memory consuming program.
-///
-/// VASM can compile headless OpenLUD files.
-///
-/// ### Specs
-///
-/// * 8-bit
-///
+//! ## OpenLUD
+//!
+//! OpenLUD is an 8-bit virtual architecture designed for memory safety and stability. OpenLUD holds a maximum of
+//! 65536 bytes of information, stored in registers. There was no compiler for OpenLUD originally until the LunarRED
+//! legacy compiler came out designed to compile into this and the NexFUSE bytecode formats.
+//!
+//! The OpenLUD OBI is no longer maintained, however still used as a reference and withholds an old standard
+//! with many practices still being used in modern programs.
+//!
+//! ### Architecture
+//!
+//! The instruction set is very small (standing around >11 instructions) and
+//! limited, as it is a standard, it is meant to be used in more constrainted environments
+//! with a less memory consuming program.
+//!
+//! VASM can compile headless OpenLUD files.
+//!
+//! ### Specs
+//!
+//! * 8-bit
+//!
 const std = @import("std");
 const codegen = @import("../codegen.zig");
 const parser = @import("../parser.zig");
