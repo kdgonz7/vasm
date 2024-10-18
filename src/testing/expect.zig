@@ -22,6 +22,9 @@ pub fn expectBin(comptime T: type, text: []const u8, bin: []const T, ctx: anytyp
     try vend1.generateBinary(root);
     try link.linkUnOptimizedWithContext(ctx, vend1.procedure_map);
 
+    if (link.binary.items.len == 0 and bin.len == 0) return;
+    try std.testing.expectEqual(bin.len, link.binary.items.len);
+
     for (0..link.binary.items.len) |i| {
         try std.testing.expectEqual(bin[i], link.binary.items[i]);
     }
