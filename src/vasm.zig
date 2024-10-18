@@ -8,6 +8,7 @@ pub const ir = @import("instruction_result.zig");
 pub const peephole = @import("peephole.zig");
 pub const drivers = @import("drivers.zig");
 pub const errors = @import("errors.zig");
+pub const nexfuse = @import("platforms/nexfuse.zig");
 
 test {
     std.testing.refAllDecls(@This());
