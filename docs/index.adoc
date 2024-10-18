@@ -1,8 +1,8 @@
 = VASM
 
-VASM is a compiler into various binary formats.
-
 VASM, in short, provides generation through *vendors*, vendors allow for platform-specific headers by essentially acting as a middleware runtime between the original top-level source code and low level virtual machine instruction set. Multiple architectures with their own respective sizes can be emitted, with little to no truncating needed. VASM also has support for managing data _sizes_ to prevent issues with numbers being too big, and catching mistakes at compile-time.
+
+*VASM* stands for *Volt ASseMbler*, taking after the late link:https://github.com/thekaigonzalez/VOLT[VOLT] compiler for NexFUSE and OpenLUD. VASM is an attempt to modernize development with low-level one dimensional bytecode formats.
 
 == Other Pages
 
