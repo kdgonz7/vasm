@@ -30,6 +30,7 @@ vasm-research:
 	mkdir -p docs/
 	$(ASCIIDOCTOR) -b $(WEB_FORMAT) documentation/other/*
 	mv -v documentation/other/*.html docs/
+
 doc: vasm.adoc stylist.adoc
 
 install: vasm.adoc install-man
