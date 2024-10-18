@@ -298,6 +298,20 @@ test {
 test {
     try expectBin(
         u8,
+        "_start:\necho '\\n'\necho 'B'",
+        &[_]u8{
+            40, 0x0a, 0,
+            40, 66,   0,
+            22,
+        },
+        ctx_folding,
+        runtime,
+    );
+}
+
+test {
+    try expectBin(
+        u8,
         "_start:\nmov R1,81 ; add 81 to register 1",
         &[_]u8{
             41, 1, 81, 0,
