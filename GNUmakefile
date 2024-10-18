@@ -30,6 +30,7 @@ stylist.adoc:
 vasm-research:
 	mkdir -p docs/
 	$(ASCIIDOCTOR) -b $(WEB_FORMAT) docs/*.adoc
+	$(ASCIIDOCTOR) -b $(WEB_FORMAT) docs/formats/*.adoc
 
 doc: vasm.adoc stylist.adoc
 
