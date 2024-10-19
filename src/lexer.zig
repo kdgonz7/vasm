@@ -327,6 +327,7 @@ pub const Lexer = struct {
 
     pub fn consumeNumberThenAdd(self: *Lexer) !void {
         const beginning_number = self.getCurrentPosition();
+        const begin_char = self.area.char_pos;
 
         while (self.isInRange() and std.ascii.isAlphanumeric(self.getCurrentCharacter())) {
             self.incrementCharacterPosition();
@@ -341,6 +342,7 @@ pub const Lexer = struct {
         const body = self.getInputTextSlice(span.begin, span.end);
 
         if (self.rules.check_for_big_numbers and std.fmt.parseInt(usize, body, 0) catch 0 > self.rules.max_number_size) {
+            self.area.char_pos = begin_char; // so we are now at the beginning of the number
             return error.NumberTooBig;
         }
 
