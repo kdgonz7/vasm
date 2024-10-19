@@ -56,6 +56,9 @@ pub const LexerError = error{
 
     /// A char literal is never closed (EOF encountered)
     LiteralNeverClosed,
+
+    /// A number is too large (requires the lexer check_for_big_numbers)
+    NumberTooBig,
 };
 
 /// Contains rules for the lexer.
@@ -67,6 +70,8 @@ pub const LexerError = error{
 ///     after the first character
 pub const LexerRules = struct {
     identifierMatches: *const fn (u8) bool,
+    check_for_big_numbers: bool = false,
+    max_number_size: usize = std.math.maxInt(usize),
 
     fn defaultIdMatcher(char: u8) bool {
         return std.ascii.isAlphanumeric(char) or char == '_' or char == '-';
@@ -75,6 +80,7 @@ pub const LexerRules = struct {
     pub fn initWithDefaultRules() LexerRules {
         return LexerRules{
             .identifierMatches = defaultIdMatcher,
+            .check_for_big_numbers = true,
         };
     }
 };
@@ -334,6 +340,10 @@ pub const Lexer = struct {
 
         const body = self.getInputTextSlice(span.begin, span.end);
 
+        if (self.rules.check_for_big_numbers and std.fmt.parseInt(usize, body, 0) catch 0 > self.rules.max_number_size) {
+            return error.NumberTooBig;
+        }
+
         const number_token = Token{
             .number = Number{
                 .number = std.fmt.parseInt(i64, body, 0) catch {
@@ -542,6 +552,18 @@ test "escape sequences" {
 
     try std.testing.expectEqual(1, lexer.stream.getSizeOfStream());
     try std.testing.expectEqualStrings("\\n", (try lexer.stream.getItemByReferenceOrError(0)).literal.character);
+}
+
+test "number sizes" {
+    var lexer = Lexer.init(std.testing.allocator);
+    defer lexer.deinit();
+
+    lexer.rules.check_for_big_numbers = true;
+    lexer.rules.max_number_size = 1;
+
+    lexer.setInputText("2");
+
+    try std.testing.expectError(error.NumberTooBig, lexer.startLexingInputText());
 }
 
 test "span" {
