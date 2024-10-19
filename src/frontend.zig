@@ -132,6 +132,16 @@ test checkNumberSizeFor {
     try std.testing.expectEqual(checkNumberSizeFor(.mercury), std.math.maxInt(u8));
 }
 
+test vendorStringToVendor {
+    try std.testing.expect(vendorStringToVendor("openlud") == .openlud);
+    try std.testing.expect(vendorStringToVendor("nexfuse") == .nexfuse);
+    try std.testing.expect(vendorStringToVendor("mercury") == .mercury);
+    try std.testing.expect(vendorStringToVendor("solarisvm") == .solarisvm);
+    try std.testing.expect(vendorStringToVendor("jade") == .jade);
+    try std.testing.expect(vendorStringToVendor("siax") == .siax);
+    try std.testing.expect(vendorStringToVendor("unknown") == .unknown);
+}
+
 /// Runs the standard VASM compiler.
 pub fn runCompilerFrontend() !void {
     var report = compiler_output.Reporter.init();
