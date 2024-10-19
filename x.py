@@ -171,7 +171,7 @@ commands = {
     "all": {
         "runner": None,
         "description": "Builds everything including stylist, vasm.adoc, and docs and runs tests silently",
-        "relies_on": [ensure_asciidoc, tests, docs, man_pages, vasm, site],
+        "relies_on": [ensure_zig, ensure_asciidoc, tests, docs, man_pages, vasm, site],
     },
     "help": {
         "runner": help_make,
