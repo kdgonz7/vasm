@@ -169,7 +169,7 @@ pub fn runCompilerFrontend() !void {
     // if there's no files, then exit
     if (opts.files.items.len == 0) {
         report.errorMessage("no input files", .{});
-        std.process.cleanExit();
+        std.process.exit(1);
     }
 
     // for each file, compile it
