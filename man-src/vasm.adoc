@@ -21,22 +21,34 @@ to be compatible with multiple VM environments.
 
 == Options
 
-*-h --help*::
-  Shows this message
-*--format, -f FORMAT*::
-Configures the format used in the binary. The format defines the instruction set used in the
-compilation process. Binary sizes and bits are handled in this option. For example, selecting
-the **openlud** option will automatically create an 8-bit vendor instead of truncating
-a 32-bit one. See **VENDORS** for more information.
+-h, --help::
+Shows the help menu. Note: this is a work in progress and currently does not show anything on Windows devices because of execve being used to run `man`. As the frontend begins to become stabilized this will change.
 
-*-O<N>*::
-Defines the optimization level for the compiler. This option has an effect on the output binary.
-  * *O0*
-  ** No optimizations.
-  * *O1*
-  ** Adds peephole optimizations such as dead code elimination.
-  * *O2*
-  ** Forcibly quitting after an empty procedure, and optimizing code as its written instead of after its wrote.
+--no-stylist::
+Disables running stylist when compiling a program. This disables any compile-time checks and also conflicts with the `--enforce-stylist` flag.
+
+--strict | --enforce-stylist::
+Quits compilation early if stylist reports any style or potential UB issues. Useful for writing strictly typed LR assembly.
+
+-ln, --allow-large-numbers::
+Allows for large numbers to be in the program. (disabling lex-time checks for large numbers)
+It is recommended to keep this option ON as it prevents UB footnote:[UB stands for "Undefined Behavior". Essentially when anything uncontrollable or unpredictable happens within the program that is not going to or not currently planned to be fixed. A way for developers to cut off specific parts of their program that are too non-conforming to be manageable.] from occuring within the program.
+
+-le::
+Specifies the `endian` flag as *big* in the compiler's options. The endian flag controls the endianness of the binary generation.
+
+-be::
+Specifies the `endian` flag as *little* in the compiler's options. The endian flag controls the endianness of the binary generation.
+
+-f, --format FORMAT::
+Specifies the output format for the binary. This output format will be the basis for any operations moving forward. This format flag is converted from a string to an enum that contains the format's information. The format is used for
+
+* Lexer number sizes
+* Vendor sizes
+* Vendor name
+
+-o, --output FILE::
+Specifies the output location of the binary. This location *must* be a file, it can not be a directory.
 
 == Vendors
 

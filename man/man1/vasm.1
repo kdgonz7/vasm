@@ -38,22 +38,40 @@ A standard compiler for LR Assembly, a weakly typed assembler language designed
 to be compatible with multiple VM environments.
 .SH "OPTIONS"
 .sp
-\fB\-h \-\-help\fP
+\-h, \-\-help
 .RS 4
-Shows this message
+Shows the help menu. Note: this is a work in progress and currently does not show anything on Windows devices because of execve being used to run \f(CRman\fP. As the frontend begins to become stabilized this will change.
 .RE
 .sp
-\fB\-\-format, \-f FORMAT\fP
+\-\-no\-stylist
 .RS 4
-Configures the format used in the binary. The format defines the instruction set used in the
-compilation process. Binary sizes and bits are handled in this option. For example, selecting
-the \fBopenlud\fP option will automatically create an 8\-bit vendor instead of truncating
-a 32\-bit one. See \fBVENDORS\fP for more information.
+Disables running stylist when compiling a program. This disables any compile\-time checks and also conflicts with the \f(CR\-\-enforce\-stylist\fP flag.
 .RE
 .sp
-\fB\-O<N>\fP
+\-\-strict | \-\-enforce\-stylist
 .RS 4
-Defines the optimization level for the compiler. This option has an effect on the output binary.
+Quits compilation early if stylist reports any style or potential UB issues. Useful for writing strictly typed LR assembly.
+.RE
+.sp
+\-ln, \-\-allow\-large\-numbers
+.RS 4
+Allows for large numbers to be in the program. (disabling lex\-time checks for large numbers)
+It is recommended to keep this option ON as it prevents UB [1] from occuring within the program.
+.RE
+.sp
+\-le
+.RS 4
+Specifies the \f(CRendian\fP flag as \fBbig\fP in the compiler\(cqs options. The endian flag controls the endianness of the binary generation.
+.RE
+.sp
+\-be
+.RS 4
+Specifies the \f(CRendian\fP flag as \fBlittle\fP in the compiler\(cqs options. The endian flag controls the endianness of the binary generation.
+.RE
+.sp
+\-f, \-\-format FORMAT
+.RS 4
+Specifies the output format for the binary. This output format will be the basis for any operations moving forward. This format flag is converted from a string to an enum that contains the format\(cqs information. The format is used for
 .sp
 .RS 4
 .ie n \{\
@@ -63,40 +81,7 @@ Defines the optimization level for the compiler. This option has an effect on th
 .  sp -1
 .  IP \(bu 2.3
 .\}
-\fBO0\fP
-.sp
-.RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.  sp -1
-.  IP \(bu 2.3
-.\}
-No optimizations.
-.RE
-.RE
-.sp
-.RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.  sp -1
-.  IP \(bu 2.3
-.\}
-\fBO1\fP
-.sp
-.RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.  sp -1
-.  IP \(bu 2.3
-.\}
-Adds peephole optimizations such as dead code elimination.
-.RE
+Lexer number sizes
 .RE
 .sp
 .RS 4
@@ -107,7 +92,8 @@ Adds peephole optimizations such as dead code elimination.
 .  sp -1
 .  IP \(bu 2.3
 .\}
-\fBO2\fP
+Vendor sizes
+.RE
 .sp
 .RS 4
 .ie n \{\
@@ -117,9 +103,13 @@ Adds peephole optimizations such as dead code elimination.
 .  sp -1
 .  IP \(bu 2.3
 .\}
-Forcibly quitting after an empty procedure, and optimizing code as its written instead of after its wrote.
+Vendor name
 .RE
 .RE
+.sp
+\-o, \-\-output FILE
+.RS 4
+Specifies the output location of the binary. This location \fBmust\fP be a file, it can not be a directory.
 .RE
 .SH "VENDORS"
 .sp
@@ -150,6 +140,9 @@ In hindsight, this doesn\(cqt have much benefit aside from memory consumption wh
 .SH "INFORMATION"
 .sp
 This document\(cqs version is 1.0.0.
+.SH "NOTES"
+.IP [1]
+UB stands for "Undefined Behavior". Essentially when anything uncontrollable or unpredictable happens within the program that is not going to or not currently planned to be fixed. A way for developers to cut off specific parts of their program that are too non\-conforming to be manageable.
 .SH "AUTHOR"
 .sp
 VOLT Foundation
