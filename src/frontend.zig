@@ -83,7 +83,9 @@ fn generateMethod(format: anytype, ctx: anytype) !void {
 
             gen.generateBinary(ctx.tree) catch |err| ctx.report.genError(err, gen, ctx);
 
-            link.linkOptimizedWithContext(drivers.nexfuse.ctx_no_folding, &gen, gen.procedure_map) catch |err| ctx.report.linkerError(err, link, ctx);
+            // TODO: nexfuse binaries should be optimized, however
+            // TODO: some instructions are lost when optimizations occur.
+            link.linkUnOptimizedWithContext(drivers.nexfuse.ctx_no_folding, gen.procedure_map) catch |err| ctx.report.linkerError(err, link, ctx);
             link.writeToFile(ctx.outfile, ctx.endian) catch |err| ctx.report.linkerWriteError(err, link, ctx);
         },
 
