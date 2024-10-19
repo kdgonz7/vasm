@@ -64,3 +64,16 @@ _start:
 == Specs
 
 NexFUSE is an 8-bit binary format.
+
+Fun Fact: In the NexFUSE *MANUAL* file, the word manual is spelt horribly wrong.
+
+[source,text]
+--
+nexfuse menaul
+
+note: this does not go over openLUD OBI, the manual is in the openLUD repository
+
+* SUB - starts a subroutine (SUB ... ENDSUB)
+* ENDSUB - ends a subroutine (SUB ... ENDSUB)
+* GOSUB - jumps to a subroutine (GOSUB [address])
+--
