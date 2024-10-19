@@ -311,8 +311,12 @@ pub const Parser = struct {
             switch (current_token.*) {
                 // if we've encountered an operator
                 .operator => |op| {
-                    var root = node.asRoot();
+                    if (op.kind == .newline) {
+                        self.incrementCurrentPosition();
+                        continue;
+                    }
 
+                    var root = node.asRoot();
                     try root.children.append(try self.createNodeFromOperator(op));
                 },
 
