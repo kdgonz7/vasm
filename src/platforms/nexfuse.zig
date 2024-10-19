@@ -609,7 +609,7 @@ test {
         &[_]u8{
             10, 97, // SUB a
             40, 65, // ECHO A
-            0, 0x80, // NUL ENDSUB
+            0, 22, 0x80, // NUL END ENDSUB
             22, // END
         },
         ctx_no_folding_compile,
@@ -641,7 +641,7 @@ test {
     try expectBin(
         u8,
         "a: echo 'A'\n_start:\n   cmp R1,R2,a\n",
-        &[_]u8{ 10, 97, 40, 65, 0, 128, 51, 1, 2, 97, 0, 22 },
+        &[_]u8{ 10, 97, 40, 65, 0, 22, 128, 51, 1, 2, 97, 0, 22 },
         ctx_no_folding,
         runtime,
     );
