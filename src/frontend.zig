@@ -72,7 +72,19 @@ fn generateMethod(format: anytype, ctx: anytype) !void {
 
             // generate the optimized binary
             link.linkOptimizedWithContext(drivers.openlud.ctx, &gen, gen.procedure_map) catch |err| ctx.report.linkerError(err, link, ctx);
-            link.writeToFile(ctx.outfile, .little) catch |err| ctx.report.linkerWriteError(err, link, ctx);
+            link.writeToFile(ctx.outfile, ctx.endian) catch |err| ctx.report.linkerWriteError(err, link, ctx);
+        },
+
+        .nexfuse => {
+            var gen = codegen.Vendor(u8).init(ctx.parent_allocator);
+            var link = linker.Linker(u8).init(ctx.parent_allocator);
+
+            try drivers.nexfuse.runtime(&gen);
+
+            gen.generateBinary(ctx.tree) catch |err| ctx.report.genError(err, gen, ctx);
+
+            link.linkOptimizedWithContext(drivers.nexfuse.ctx_no_folding, &gen, gen.procedure_map) catch |err| ctx.report.linkerError(err, link, ctx);
+            link.writeToFile(ctx.outfile, ctx.endian) catch |err| ctx.report.linkerWriteError(err, link, ctx);
         },
 
         else => {
@@ -203,6 +215,7 @@ pub fn runCompilerFrontend() !void {
             .file_name = file,
             .lexer = &lex,
             .report = &report,
+            .endian = opts.endian,
         });
     }
 }
