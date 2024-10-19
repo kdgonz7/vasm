@@ -28,11 +28,8 @@ To build the VOLT Assembly compiler, you will need to install Zig `0.14.0-dev.16
 # To install:
 $ git clone https://github.com/kdgonz7/vasm.git
 $ cd vasm
-$ zig build tests && zig build # To run the test suite and build the frontend program into a zig-out directory
-$ zig build tests && sudo zig build --prefix DIRECTORY # runs the test suite and builds the frontend program into DIRECTORY
-
-# Uninstall and documentation are only available on unix-based platforms. Cygwin/MSYS can be a potential
-# built solution.
+$ python x.py all # to build everything
+$ python x.py build # to just build VASM
 -----
 
 For Unix-like devices with `make`: (**verify that you have `sudo` and `git` installed**)
