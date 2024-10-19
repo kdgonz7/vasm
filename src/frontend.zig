@@ -263,6 +263,7 @@ pub fn main() !void {
             report.astError(err, lex);
         };
 
+        // generate using the selected VM
         try generateMethod(selected_vm, .{
             .parent_allocator = allocator,
             .tree = ast,
