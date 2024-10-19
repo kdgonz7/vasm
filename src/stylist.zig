@@ -59,6 +59,8 @@ pub fn analyze(parent_allocator: std.mem.Allocator, source_text: []const u8) !Su
     var line: usize = 1;
     var char: usize = 1;
 
+    var commented_out: bool = false;
+
     for (0..source_text.len - 1) |i| {
         if (source_text[i] == '\n') {
             line += 1;
@@ -68,7 +70,18 @@ pub fn analyze(parent_allocator: std.mem.Allocator, source_text: []const u8) !Su
         char += 1;
 
         switch (source_text[i]) {
+            ';' => {
+                commented_out = true;
+            },
+
+            '\n' => {
+                commented_out = false;
+            },
+
             ',' => {
+                if (commented_out) {
+                    continue;
+                }
                 if (source_text.len <= i + 1 or source_text[i + 1] == '\n' or (source_text[i + 1] == '\r' and source_text[i + 2] == '\n')) {
                     try returning_list.append(
                         Suggestion{
@@ -98,6 +111,10 @@ pub fn analyze(parent_allocator: std.mem.Allocator, source_text: []const u8) !Su
                 }
             },
             'j' => {
+                if (commented_out) {
+                    continue;
+                }
+
                 // checking if `jmp` label argument has more than one letter
                 // reason being that if jmp is called, folding is off, which means
                 // that the subroutine label names are just a single letter. Multiple letters
