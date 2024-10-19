@@ -102,7 +102,16 @@ pub const Reporter = struct {
                 self.getSourceLocation(lex, .suggestion);
             },
 
-            else => {},
+            else => {
+                self.errorMessage("{s}:{d}:{d}: {s}", .{
+                    filename,
+                    lex.getLineNumber(),
+                    lex.area.char_pos,
+                    @errorName(err),
+                });
+
+                std.process.exit(1);
+            },
         }
 
         std.process.exit(1);
@@ -203,7 +212,13 @@ pub const Reporter = struct {
                     gen.erroneous_token.toRegister().span.line_number - 1,
                 );
             },
-            else => {},
+
+            else => {
+                self.errorMessage("{s}: {s}", .{
+                    ctx.file_name,
+                    @errorName(err),
+                });
+            },
         }
 
         std.process.exit(1);
