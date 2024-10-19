@@ -10,6 +10,7 @@ pub const drivers = @import("drivers.zig");
 pub const errors = @import("errors.zig");
 pub const nexfuse = @import("platforms/nexfuse.zig");
 pub const stylist = @import("stylist.zig");
+pub const hybrid = @import("hybrid.zig");
 
 test {
     std.testing.refAllDecls(@This());
