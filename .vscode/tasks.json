@@ -6,7 +6,7 @@
         {
             "label": "Tests",
             "type": "shell",
-            "command": "zig build tests --summary all",
+            "command": "python x.py tests",
             "problemMatcher": [
                 "$zig"
             ],
@@ -22,7 +22,7 @@
         {
             "label": "Build",
             "type": "shell",
-            "command": "zig build",
+            "command": "python x.py build",
             "problemMatcher": [
                 "$zig"
             ],
@@ -42,7 +42,7 @@
         {
             "label": "Docs",
             "type": "shell",
-            "command": "make doc",
+            "command": "python x.py site docs",
             "presentation": {
                 "echo": true,
                 "reveal": "always",
@@ -54,7 +54,8 @@
             "group": {
                 "kind": "none",
                 "isDefault": true
-            }
+            },
+            "problemMatcher": []
         }
     ]
 }
