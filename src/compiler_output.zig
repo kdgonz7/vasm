@@ -69,17 +69,28 @@ pub const Reporter = struct {
     }
 
     /// Prints error `err` and tries to get the source location using the lexer `lex`.
-    pub fn printError(lex: *lexer.Lexer, filename: []const u8, err: anyerror) noreturn {
+    pub fn printError(self: *Reporter, lex: *lexer.Lexer, filename: []const u8, err: anyerror) noreturn {
         switch (err) {
             error.UnexpectedToken => {
-                errorMessage("{s}:{d}:{d}: unexpected token `{c}'", .{
+                self.errorMessage("{s}:{d}:{d}: unexpected token `{c}'", .{
                     filename,
                     lex.getLineNumber(),
                     lex.area.char_pos,
                     lex.getCurrentCharacter(),
                 });
 
-                getSourceLocation(lex, .suggestion);
+                self.getSourceLocation(lex, .suggestion);
+            },
+
+            error.NumberTooBig => {
+                self.errorMessage("{s}:{d}:{d}: number too big (note that max size is {d})", .{
+                    filename,
+                    lex.getLineNumber(),
+                    lex.area.char_pos,
+                    lex.rules.max_number_size,
+                });
+
+                self.getSourceLocation(lex, .suggestion);
             },
 
             else => {},
@@ -128,44 +139,48 @@ pub const Reporter = struct {
             i += 1;
         }
     }
-};
 
-pub fn getSourceLocation(lexer_state: *lexer.Lexer, status: compiler_status.Status) void {
-    var lines = lexer_state.splitInputTextIntoLines();
-    var i: usize = 0;
+    pub fn getSourceLocation(self: *Reporter, lexer_state: *lexer.Lexer, status: compiler_status.Status) void {
+        var lines = lexer_state.splitInputTextIntoLines();
+        var i: usize = 0;
 
-    // try to find the line that the lexer stopped on
-    while (lines.next()) |line| {
-        if (i == lexer_state.getLineNumber() - 1) {
-            // we get stderr
-            const stderr = std.io.getStdErr().writer();
+        // try to find the line that the lexer stopped on
+        while (lines.next()) |line| {
+            if (i == lexer_state.getLineNumber() - 1) {
+                // we get stderr
+                const stderr = std.io.getStdErr().writer();
 
-            // print the line number
-            // 1        |     ...
-            // + padding on the left
-            stderr.print("{d: <8}| {s}\n", .{ lexer_state.getLineNumber(), line }) catch unreachable;
-            stderr.print("          ", .{}) catch unreachable;
+                // print the line number
+                // 1        |     ...
+                // + padding on the left
+                stderr.print("{d: <8}| {s}\n", .{ lexer_state.getLineNumber(), line }) catch unreachable;
+                stderr.print("          ", .{}) catch unreachable;
 
-            // try to move to the stopped char pos
-            for (0..lexer_state.area.char_pos - 1) |_| {
-                stderr.print(" ", .{}) catch unreachable;
+                // try to move to the stopped char pos
+                for (0..lexer_state.area.char_pos - 1) |_| {
+                    stderr.print(" ", .{}) catch unreachable;
+                }
+
+                switch (status) {
+                    .suggestion => {
+                        self.setStderrColor(.bright_magenta);
+                    },
+
+                    .erroneous => {
+                        self.setStderrColor(.bright_red);
+                    },
+                }
+
+                // print a line where the error happens
+                stderr.print("^", .{}) catch unreachable;
+                stderr.print("\n", .{}) catch unreachable;
+
+                self.setStderrColor(.reset);
+
+                break;
             }
 
-            // try and match the color with status
-            var color: []const u8 = "\x1b[31;1m";
-
-            // TODO: scale this
-            if (status == .suggestion) {
-                color = "\x1b[33m";
-            }
-
-            // print a line where the error happens
-            stderr.print("{s}^~~~~~~~~~\x1b[0m", .{color}) catch unreachable;
-            stderr.print("\n", .{}) catch unreachable;
-
-            break;
+            i += 1;
         }
-
-        i += 1;
     }
-}
+};
