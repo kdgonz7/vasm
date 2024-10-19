@@ -166,11 +166,11 @@ commands = {
     },
     "site": {
         "runner": site,
-        "description": "(alias to build)",
+        "description": "Builds the website documentation",
     },
     "man-pages": {
         "runner": man_pages,
-        "description": "(alias to build)",
+        "description": "Builds the manual pages (also places them in the docs/man directory)",
     },
 }
 
