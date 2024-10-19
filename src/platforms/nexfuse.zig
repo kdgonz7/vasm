@@ -59,6 +59,7 @@ pub const ctx_no_folding = .{
     .vasm_header = false,
     .use_end_byte = true,
     .end_byte = 22,
+    .proc_end_byte = true,
 };
 
 //// For tests.
@@ -71,6 +72,7 @@ pub const ctx_no_folding_compile = .{
     .vasm_header = false,
     .use_end_byte = true,
     .end_byte = 22,
+    .proc_end_byte = true,
 };
 
 pub const ctx_folding = .{
@@ -80,6 +82,7 @@ pub const ctx_folding = .{
     .vasm_header = false,
     .use_end_byte = true,
     .end_byte = 22,
+    .proc_end_byte = false,
 };
 
 pub fn runtime(vend: *codegen.Vendor(u8)) !void {
