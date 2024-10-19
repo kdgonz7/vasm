@@ -18,3 +18,7 @@ VASM, in short, provides generation through *vendors*, vendors allow for platfor
 * link:./formats/mercury.html[MercuryPIC]
 * link:./formats/openlud.html[OpenLUD]
 * link:./formats/siax.html[SiAX]
+
+=== Compiler Documentation
+
+* link:./compiler/flags.html[Compiler Flags]
