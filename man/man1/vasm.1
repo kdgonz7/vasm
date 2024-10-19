@@ -111,6 +111,11 @@ Vendor name
 .RS 4
 Specifies the output location of the binary. This location \fBmust\fP be a file, it can not be a directory.
 .RE
+.sp
+\-O[N]
+.RS 4
+Sets the optimization level to \fBN\fP. For some architectures this will have an effect on what context is chosen and passed to the generator, and others it may not.
+.RE
 .SH "VENDORS"
 .sp
 A "vendor" is defined as information to help generate binaries based on documented instructions sets. Instead of mapping each instruction to a number, vasm supports generation of binaries through hand\-implemented functions which are children of instructions. Using the VASM zig API, the OpenLUD vendor is created using the following method:
