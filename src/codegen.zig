@@ -236,10 +236,6 @@ pub fn Vendor(comptime format_type: type) type {
                 }
             }
 
-            if (self.procedure_add_end) {
-                try generator.append(self.end_byte);
-            }
-
             try self.procedure_map.put(procedure_name, generator.binary);
         }
 
