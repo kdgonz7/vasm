@@ -113,7 +113,7 @@ pub fn analyze(parent_allocator: std.mem.Allocator, source_text: []const u8) !Su
                     var proc_chars: usize = 0;
                     var m: usize = i + 4;
 
-                    while (source_text[m] != '\n' and source_text[m] != '\r' and source_text[m] != ' ' and source_text[m] != 'j' and std.ascii.isAlphanumeric(source_text[m])) : (m += 1) {
+                    while (m < source_text.len and source_text[m] != '\n' and source_text[m] != '\r' and source_text[m] != ' ' and source_text[m] != 'j' and std.ascii.isAlphanumeric(source_text[m])) : (m += 1) {
                         proc_chars += 1;
                     }
 
@@ -125,7 +125,7 @@ pub fn analyze(parent_allocator: std.mem.Allocator, source_text: []const u8) !Su
                                 .suggestion_location = SuggestionLocation{
                                     .line_number = line,
                                     .problematic_area_begin = char,
-                                    .problematic_area_end = char + 1,
+                                    .problematic_area_end = char + proc_chars - 1,
                                 },
 
                                 .suggestion_message = "procedure with multiple letters",
