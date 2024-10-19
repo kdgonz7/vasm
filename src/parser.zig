@@ -355,6 +355,7 @@ pub const Parser = struct {
                 },
 
                 else => {
+                    std.debug.print("{any}\n", .{current_token.*});
                     return error.UnexpectedToken;
                 },
             }
@@ -382,7 +383,12 @@ pub const Parser = struct {
                 return try self.createNodeFromMacro();
             },
 
+            // a simple newline, ignore it
+            OpKind.newline => {},
+
             else => {
+                std.debug.print("{any}\n", .{operator});
+
                 return error.UnexpectedToken;
             },
         }
