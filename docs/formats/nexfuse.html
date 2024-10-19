@@ -2558,10 +2558,43 @@ note: this does not go over openLUD OBI, the manual is in the openLUD repository
 </div>
 </div>
 </div>
+<div class="sect1">
+<h2 id="_procedure_endings">Procedure Endings</h2>
+<div class="sectionbody">
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Warning</div>
+</td>
+<td class="content">
+In NexFUSE, the subroutine body is simply a view into another program from within a parent program.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>In NexFUSE, a <em>"sub-routine"</em> or <em>"procedure"</em> is a separated environment of binary, delimited by two separate end bytes. One is to signal the end of the procedure, and the other is to signal the end of the bytecode. The EOB (End of Bytecode) byte is not used by the interpreter when creating procedures; it is simply used to denote where the method ends.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-text" data-lang="text">SUB a
+   DO WORK | the entirety of the subroutine.
+   END     | This is run with the same function that the root binary is run with, that's why END is needed here as well
+END SUB
+
+END &lt;--- ends the program</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>There are two different bytes used in the example above, and one of them is to signal the end of the procedure. The other one is the end of the procedure. Once it is run, the interpreter can pass through the same function that is used to run the file itself.</p>
+</div>
+</div>
+</div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2024-10-18 23:33:13 -0400
+Last updated 2024-10-19 11:23:45 -0400
 </div>
 </div>
 </body>

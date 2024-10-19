@@ -77,3 +77,21 @@ note: this does not go over openLUD OBI, the manual is in the openLUD repository
 * ENDSUB - ends a subroutine (SUB ... ENDSUB)
 * GOSUB - jumps to a subroutine (GOSUB [address])
 --
+
+== Procedure Endings
+
+WARNING: In NexFUSE, the subroutine body is simply a view into another program from within a parent program.
+
+In NexFUSE, a _"sub-routine"_ or _"procedure"_ is a separated environment of binary, delimited by two separate end bytes. One is to signal the end of the procedure, and the other is to signal the end of the bytecode. The EOB (End of Bytecode) byte is not used by the interpreter when creating procedures; it is simply used to denote where the method ends.
+
+[source,text]
+--
+SUB a
+   DO WORK | the entirety of the subroutine.
+   END     | This is run with the same function that the root binary is run with, that's why END is needed here as well
+END SUB
+
+END <--- ends the program
+--
+
+There are two different bytes used in the example above, and one of them is to signal the end of the procedure. The other one is the end of the procedure. Once it is run, the interpreter can pass through the same function that is used to run the file itself.
