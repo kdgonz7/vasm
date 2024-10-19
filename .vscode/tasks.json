@@ -6,7 +6,7 @@
         {
             "label": "Tests",
             "type": "shell",
-            "command": "make tests-summary",
+            "command": "zig build tests --summary all",
             "problemMatcher": [
                 "$zig"
             ],
@@ -22,7 +22,7 @@
         {
             "label": "Build",
             "type": "shell",
-            "command": "make app",
+            "command": "zig build",
             "problemMatcher": [
                 "$zig"
             ],
@@ -43,7 +43,6 @@
             "label": "Docs",
             "type": "shell",
             "command": "make doc",
-
             "presentation": {
                 "echo": true,
                 "reveal": "always",
