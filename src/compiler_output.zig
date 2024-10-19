@@ -2,14 +2,8 @@ const std = @import("std");
 const tty = std.io.tty;
 
 const lexer = @import("lexer.zig");
+const linker = @import("linker.zig");
 const compiler_status = @import("compiler_status.zig");
-
-//TODO: lookie here pal, it's probably wednesday at the time you see this.
-// it's almost 10:00 pm and im gonna stop working on this, it's burning me out for the night
-// so far i've created this shiny new REPORTER class which manages the stdout and stderr configs to print
-// colored messages to the console using std.io.tty.Config
-// we've still got to migrate the lexer source location function into the reporter class and still have to
-// rewrite the frontend to fit the new API. see the frontend.zig file if you don't know what I mean.
 
 /// Manages standard error and standard output files. Prints in color cross platform.
 pub const Reporter = struct {
@@ -68,6 +62,21 @@ pub const Reporter = struct {
         self.setStderrColor(.reset);
     }
 
+    pub fn leaveNote(self: *Reporter, comptime format: []const u8, args: anytype) void {
+        const wri = self.stderr.writer();
+
+        wri.print("vasm: ", .{}) catch unreachable;
+
+        self.setStderrColor(.bright_magenta);
+
+        wri.print("note: ", .{}) catch unreachable;
+
+        self.setStderrColor(.reset);
+        wri.print(format, args) catch unreachable;
+
+        wri.print("\n", .{}) catch unreachable;
+    }
+
     /// Prints error `err` and tries to get the source location using the lexer `lex`.
     pub fn printError(self: *Reporter, lex: *lexer.Lexer, filename: []const u8, err: anyerror) noreturn {
         switch (err) {
@@ -96,13 +105,6 @@ pub const Reporter = struct {
             else => {},
         }
 
-        std.process.exit(1);
-    }
-
-    pub fn astError(self: *Reporter, err: anytype, lex: lexer.Lexer) noreturn {
-        _ = lex;
-
-        self.errorMessage("ast error {any}", .{err});
         std.process.exit(1);
     }
 
@@ -182,5 +184,53 @@ pub const Reporter = struct {
 
             i += 1;
         }
+    }
+
+    pub fn genError(self: *Reporter, err: anyerror, gen: anytype, ctx: anytype) noreturn {
+        switch (err) {
+            error.RegisterNumberTooLarge => {
+                self.errorMessage("{s}:{d}:{d}: {s}", .{
+                    ctx.file_name,
+                    gen.erroneous_token.toRegister().span.line_number,
+                    gen.erroneous_token.toRegister().span.begin,
+                    "register number too large",
+                });
+
+                ctx.report.getCustomarySourceLocationUsingLexer(
+                    ctx.lexer,
+                    gen.erroneous_token.toRegister().span.char_begin,
+                    gen.erroneous_token.toRegister().span.end,
+                    gen.erroneous_token.toRegister().span.line_number - 1,
+                );
+            },
+            else => {},
+        }
+
+        std.process.exit(1);
+    }
+
+    pub fn astError(self: *Reporter, err: anytype, lex: lexer.Lexer) noreturn {
+        _ = lex;
+
+        self.errorMessage("ast error {any}", .{err});
+        std.process.exit(1);
+    }
+
+    pub fn linkerError(self: *Reporter, err: anyerror, link: anytype, ctx: anytype) noreturn {
+        _ = ctx;
+        _ = link;
+
+        self.leaveNote("linker error {any}", .{err});
+
+        std.process.exit(1);
+    }
+
+    pub fn linkerWriteError(self: *Reporter, err: anyerror, link: anytype, ctx: anytype) noreturn {
+        _ = ctx;
+        _ = link;
+
+        self.leaveNote("linker write error {any}", .{err});
+
+        std.process.exit(1);
     }
 };
