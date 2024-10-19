@@ -4,6 +4,7 @@
 ASCIIDOCTOR=$(shell which asciidoctor)
 FORMAT=manpage
 WEB_FORMAT=html
+
 all: tests app vasm.adoc stylist.adoc vasm-research
 
 clean:
