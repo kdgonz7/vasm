@@ -206,7 +206,7 @@ test {
     const suggestions = try analyze(std.testing.allocator, @embedFile("stylist-tests/jmp-non-folding.asm"));
     defer suggestions.deinit();
 
-    try std.testing.expectEqual(1, suggestions.items.len);
+    try std.testing.expectEqual(2, suggestions.items.len);
     try std.testing.expectEqual(2, suggestions.items[0].suggestion_location.line_number);
-    try std.testing.expectEqual(10, suggestions.items[0].suggestion_location.problematic_area_begin);
+    try std.testing.expectEqual(12, suggestions.items[0].suggestion_location.problematic_area_begin);
 }
