@@ -85,7 +85,12 @@ fn generateMethod(format: anytype, ctx: anytype) !void {
 
             // TODO: nexfuse binaries should be optimized, however
             // TODO: some instructions are lost when optimizations occur.
-            link.linkUnOptimizedWithContext(drivers.nexfuse.ctx_no_folding, gen.procedure_map) catch |err| ctx.report.linkerError(err, link, ctx);
+
+            if (ctx.optimization_level > 0) {
+                link.linkOptimizedWithContext(drivers.nexfuse.ctx_no_folding, &gen, gen.procedure_map) catch |err| ctx.report.linkerError(err, link, ctx);
+            } else {
+                link.linkUnOptimizedWithContext(drivers.nexfuse.ctx_no_folding, gen.procedure_map) catch |err| ctx.report.linkerError(err, link, ctx);
+            }
             link.writeToFile(ctx.outfile, ctx.endian) catch |err| ctx.report.linkerWriteError(err, link, ctx);
         },
 
@@ -219,6 +224,7 @@ pub fn runCompilerFrontend() !void {
         .lexer = &lex,
         .report = &report,
         .endian = opts.endian,
+        .optimization_level = opts.optimization_level,
     });
 }
 
