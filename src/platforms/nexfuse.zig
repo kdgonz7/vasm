@@ -98,6 +98,10 @@ pub fn runtime(vend: *codegen.Vendor(u8)) !void {
     try vend.createAndImplementInstruction(u8, "nop", &nopIns);
     try vend.createAndImplementInstruction(u8, "lar", &larIns);
     try vend.createAndImplementInstruction(u8, "lsl", &lslIns);
+    try vend.createAndImplementInstruction(u8, "in", &inIns);
+    try vend.createAndImplementInstruction(u8, "cmp", &cmpIns);
+    try vend.createAndImplementInstruction(u8, "inc", &incIns);
+    try vend.createAndImplementInstruction(u8, "rep", &repIns);
 }
 
 //TODO: add type checks for all of these instructions
@@ -322,9 +326,70 @@ pub fn lslIns(
     return .ok;
 }
 
-// pub fn inIns(generator: anytype, vendor: anytype, args: anytype) !void {}
-// pub fn cmpIns(generator: anytype, vendor: anytype, args: anytype) !void {}
-// pub fn incIns(generator: anytype, vendor: anytype, args: anytype) !void {}
+pub fn inIns(
+    gen: *codegen.Generator(u8),
+    vend: *codegen.Vendor(u8),
+    args: []parser.Value,
+) Return {
+    _ = vend;
+    const reg_num = args[0].toRegister();
+
+    try gen.append(50);
+    try gen.append(@intCast(reg_num.getRegisterNumber()));
+
+    return .ok;
+}
+
+pub fn cmpIns(
+    gen: *codegen.Generator(u8),
+    vend: *codegen.Vendor(u8),
+    args: []parser.Value,
+) Return {
+    // CMP compares two registers and then jumps to a label
+    // [reg1] [reg2] [label] | r1[..]==r[2] JUMP label
+
+    _ = vend;
+
+    const register1 = args[0].toRegister();
+    const register2 = args[1].toRegister();
+    const label = args[2].toIdentifier();
+
+    try gen.append(51);
+    try gen.append(@intCast(register1.getRegisterNumber()));
+    try gen.append(@intCast(register2.getRegisterNumber()));
+    try gen.append(@bitCast(label.identifier_string[0])); // use the first letter of label (assuming folding is off)
+
+    return .ok;
+}
+pub fn incIns(
+    gen: *codegen.Generator(u8),
+    vend: *codegen.Vendor(u8),
+    args: []parser.Value,
+) Return {
+    _ = vend;
+
+    const reg_num = args[0].toRegister();
+
+    try gen.append(52);
+    try gen.append(@intCast(reg_num.getRegisterNumber()));
+
+    return .ok;
+}
+pub fn repIns(
+    gen: *codegen.Generator(u8),
+    vend: *codegen.Vendor(u8),
+    args: []parser.Value,
+) Return {
+    _ = vend;
+
+    // repeats the procedure a certain number of times
+    const proc_name = args[0].toIdentifier();
+    const times = args[1].toNumber();
+
+    try gen.append(53);
+    try gen.append(@bitCast(proc_name.identifier_string[0]));
+    try gen.append(@intCast(times.getNumber()));
+}
 // pub fn repIns(generator: anytype, vendor: anytype, args: anytype) !void {}
 
 // wellness checks
@@ -542,6 +607,36 @@ test {
         "_start:\n   lsl R1,'A','B','C',\n",
         &[_]u8{ 49, 1, 65, 66, 67, 0, 22 },
         ctx_folding,
+        runtime,
+    );
+}
+
+test {
+    try expectBin(
+        u8,
+        "a: echo 'A'\n_start:\n   cmp R1,R2,a\n",
+        &[_]u8{ 10, 97, 40, 65, 0, 128, 51, 1, 2, 97, 0, 22 },
+        ctx_no_folding,
+        runtime,
+    );
+}
+
+test {
+    try expectBin(
+        u8,
+        "_start:\n   in R1\n",
+        &[_]u8{ 50, 1, 0, 22 },
+        ctx_no_folding,
+        runtime,
+    );
+}
+
+test {
+    try expectBin(
+        u8,
+        "_start:\n   inc R1\n",
+        &[_]u8{ 52, 1, 0, 22 },
+        ctx_no_folding,
         runtime,
     );
 }
