@@ -41,6 +41,86 @@ stylist is a program engrained in VASM designed to enforce good and compliant st
 .RS 4
 Error when stylist reports anything wrong or suggests anything with the source code. This option is by default off and recommended to be on when working on consistent code bases.
 .RE
+.SH "STYLIST REPORTS"
+.sp
+S000 (Trailing Comma)
+.RS 4
+Trailing comma at the end of a statement. These can usually be omitted and are unnecessary especially in simple contexts.
+.RE
+.sp
+.if n .RS 4
+.nf
+.fam C
+_start:
+    init R1, <\-\-\-\-\- error happens here
+.fam
+.fi
+.if n .RE
+.sp
+S0001 (Space after comma)
+.RS 4
+To make code look nicer and more laid out, it is better to add a space before each parameter.
+.RE
+.sp
+.if n .RS 4
+.nf
+.fam C
+_start:
+    mov R1,5
+           ^ add a space here
+.fam
+.fi
+.if n .RE
+.sp
+.if n .RS 4
+.nf
+.fam C
+_start:
+    mov R1, 5
+           ^ good! :)
+.fam
+.fi
+.if n .RE
+.sp
+S0004 (No Final Line)
+.RS 4
+The file does not end with a newline. A majority of text editors/IDEs will remind you of this but its always good to leave one.
+.RE
+.sp
+.if n .RS 4
+.nf
+.fam C
+_start:
+    init R1
+.fam
+.fi
+.if n .RE
+.sp
+Versus:
+.sp
+.if n .RS 4
+.nf
+.fam C
+_start:
+    init R1
+\(rsn <\-\-\- newline (don\*(Aqt actually write it out, just press enter)
+.fam
+.fi
+.if n .RE
+.sp
+S0005 (Long JMP Name)
+.RS 4
+JMP is an instruction specific to bytecode formats that have a custom procedure mechanism. VASM compiles procedure headers by the first letter of their name. There are plans to change this into a hashing system.
+.RE
+.sp
+.if n .RS 4
+.nf
+.fam C
+jmp abc
+    ^~~ anything extra shouldn\*(Aqt be there, the procedure A is still being called.
+.fam
+.fi
+.if n .RE
 .SH "AUTHOR"
 .sp
 Kai D. Gonzalez

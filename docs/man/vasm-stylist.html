@@ -473,11 +473,90 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 </div>
 </div>
+<div class="sect1">
+<h2 id="_stylist_reports">Stylist Reports</h2>
+<div class="sectionbody">
+<div class="dlist">
+<dl>
+<dt class="hdlist1">S000 (Trailing Comma)</dt>
+<dd>
+<p>Trailing comma at the end of a statement. These can usually be omitted and are unnecessary especially in simple contexts.</p>
+</dd>
+</dl>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-text" data-lang="text">_start:
+    init R1, &lt;----- error happens here</code></pre>
+</div>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">S0001 (Space after comma)</dt>
+<dd>
+<p>To make code look nicer and more laid out, it is better to add a space before each parameter.</p>
+</dd>
+</dl>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-asm" data-lang="asm">_start:
+    mov R1,5
+           ^ add a space here</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-asm" data-lang="asm">_start:
+    mov R1, 5
+           ^ good! :)</code></pre>
+</div>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">S0004 (No Final Line)</dt>
+<dd>
+<p>The file does not end with a newline. A majority of text editors/IDEs will remind you of this but its always good to leave one.</p>
+</dd>
+</dl>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-asm" data-lang="asm">_start:
+    init R1</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Versus:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-asm" data-lang="asm">_start:
+    init R1
+\n &lt;--- newline (don't actually write it out, just press enter)</code></pre>
+</div>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">S0005 (Long JMP Name)</dt>
+<dd>
+<p>JMP is an instruction specific to bytecode formats that have a custom procedure mechanism. VASM compiles procedure headers by the first letter of their name. There are plans to change this into a hashing system.</p>
+</dd>
+</dl>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-asm" data-lang="asm">jmp abc
+    ^~~ anything extra shouldn't be there, the procedure A is still being called.</code></pre>
+</div>
+</div>
+</div>
+</div>
 </div>
 <div id="footer">
 <div id="footer-text">
 Version 1.0.0<br>
-Last updated 2024-10-19 13:27:06 -0400
+Last updated 2024-10-19 15:46:48 -0400
 </div>
 </div>
 </body>
