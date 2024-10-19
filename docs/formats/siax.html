@@ -2476,7 +2476,24 @@ print {
 <h2 id="_ivt">IVT</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>The <strong>Interrupt Vector Table</strong> stores addresses of functions used in the main CPU. These control the data manipulation, functionality, and file management that SiAX provides.</p>
+<p>The <strong>Interrupt Vector Table (IVT)</strong> is a mechanism in SiAX designed to make look up and execution of instructions faster.</p>
+</div>
+<div class="paragraph">
+<p>It works by storing all of the instructions and their addresses in a table that can be looked up, executed and reused in actual code. Instructions in SiAX have names attached, which are used by the CPU to distinguish them.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-c" data-lang="c">---
+// map the ALLOCH instruction with the "ALLOCH" string
+ivt_map (cpu-&gt;ivt, I_ALLOCH, "ALLOCH", true);
+---</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The IVT is not very quick, sitting at an <strong>O(n)</strong> speed. However, the IVT has a large usage in SiAX, providing all of the functions and abstractions needed for the programs that are under this format to run properly.</p>
+</div>
+<div class="paragraph">
+<p>The max size for an IVT in SiAX is around <strong>199</strong> entries which means that there can be <strong>199</strong> instructions in one runtime, which allows programs to do multiple different tasks using the large instruction set that SiAX provides.</p>
 </div>
 </div>
 </div>
@@ -2484,7 +2501,7 @@ print {
 <h2 id="_the_brains">The Brains</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>The CPU has a mutable state that is changed throughout the lifetime of a program. For example: when trying to open a binary, the CPU will be in an <strong>OFF</strong> state until the program is actually starting to be read. Once the program is begin read, this will set the state <strong>ON</strong> and will also configure the program counter.</p>
+<p>The CPU has a mutable state that is changed throughout the lifetime of a program. For example: when trying to open a binary, the CPU will be in an <strong>OFF</strong> state until the program is actually starting to be read. Once the program is being read, this will set the state <strong>ON</strong> and will also configure the program counter.</p>
 </div>
 <div class="paragraph">
 <p>However, there are some caveats to this method, such as if:</p>
@@ -2500,7 +2517,7 @@ print {
 <div class="ulist">
 <ul>
 <li>
-<p>ways to mitigate or prevent a lot of these race conditions and issues from happening and do not access data that you have not properly initialize via the SiAX documentation.</p>
+<p>Ways to mitigate or prevent a lot of these race conditions and issues from happening include but are not limited to not accessing data that you have not properly initialized, and not creating programs of a large size.</p>
 </li>
 </ul>
 </div>
@@ -2516,14 +2533,22 @@ print {
 <h2 id="_dead_code">Dead Code</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>When there are extra bytes at the end of the binary payload, SiAX&#8217;s internal CPU can report these extra bytes into stdout.</p>
+<p>SiAX has dead code awareness by its rules and structure. The way that it checks for this is by stopping when a magical stop operator has been reached. This operator has the hex value of <strong>0xEFB</strong>. It uses this end code to provide a range of used code and unused code.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_error_handling">Error Handling</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In SiAX, the CPU exits a program forcefully by using the C <code>abort`</code> function upon error. This function can, while handling the program state gracefully, leave cryptic messages that are unable to provide useful information as to why the program crashed. Due to it being unmaintained, it currently cannot provide accurate diagnostics as to what happened relative to either the SiAX source code or the program data itself.</p>
 </div>
 </div>
 </div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2024-10-18 20:00:05 -0400
+Last updated 2024-10-18 21:27:43 -0400
 </div>
 </div>
 </body>
