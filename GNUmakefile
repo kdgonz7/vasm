@@ -31,6 +31,7 @@ vasm-research:
 	mkdir -p docs/
 	$(ASCIIDOCTOR) -b $(WEB_FORMAT) docs/*.adoc
 	$(ASCIIDOCTOR) -b $(WEB_FORMAT) docs/formats/*.adoc
+	$(ASCIIDOCTOR) -b $(WEB_FORMAT) docs/compiler/*.adoc
 
 doc: vasm.adoc stylist.adoc
 
