@@ -103,7 +103,7 @@ pub const Reporter = struct {
             if (i == line_number) {
                 const stderr = self.stderr.writer();
 
-                stderr.print("{d: <8}| {s}\n", .{ line_number, std.mem.trim(u8, line, " \t \n") }) catch unreachable;
+                stderr.print("{d: <8}| {s}\n", .{ line_number + 1, std.mem.trim(u8, line, " \t \n") }) catch unreachable;
                 stderr.print("  ", .{}) catch unreachable;
 
                 for (0..begin) |_| {
