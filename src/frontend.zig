@@ -205,11 +205,11 @@ pub fn reportStylist(allocator: anytype, reporter: *compiler_output.Reporter, ct
     };
 
     for (report.items) |ding| {
-        reporter.errorMessage("{s}:{d}:{d}: ({any}) {s}", .{
+        reporter.errorMessage("{s}:{d}:{d}: ({s}) {s}", .{
             ctx.filename,
             ding.suggestion_location.line_number,
             ding.suggestion_location.problematic_area_begin,
-            ding.suggestion_type,
+            suggestionToStr(ding.suggestion_type),
             ding.suggestion_message,
         });
 
@@ -228,6 +228,16 @@ pub fn reportStylist(allocator: anytype, reporter: *compiler_output.Reporter, ct
         std.process.exit(1);
     }
 }
+
+pub fn suggestionToStr(suggestion: stylist.SuggestionType) []const u8 {
+    return switch (suggestion) {
+        .good_practice => "good practice",
+        .undefined_behavior => "UB",
+        .non_compliant => "non-compliant",
+        .regular => "regular",
+    };
+}
+
 // TODO: if you're here from the compiler output file i want you (future me) to know that
 // this is looking pretty good, don't fuck up anything.
 // we just need to reimplement the commented out code modularly, which means
