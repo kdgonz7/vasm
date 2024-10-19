@@ -91,7 +91,7 @@ pub fn analyze(parent_allocator: std.mem.Allocator, source_text: []const u8) !Su
                                 .problematic_area_end = char + 1,
                             },
 
-                            .suggestion_message = "behavior of this line may be undefined. try replacing the `,` with `;`. ",
+                            .suggestion_message = "trailing space",
                             .suggestion_type = .non_compliant,
                         },
                     );
