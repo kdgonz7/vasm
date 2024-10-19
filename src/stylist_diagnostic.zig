@@ -9,7 +9,7 @@ pub fn reportStylist(allocator: anytype, reporter: *compiler_output.Reporter, ct
     };
 
     for (report.items) |ding| {
-        reporter.errorMessage("{s}:{d}:{d}: ({s}) {s}", .{
+        reporter.stylistMessage("{s}:{d}:{d}: ({s}) {s}", .{
             ctx.filename,
             ding.suggestion_location.line_number,
             ding.suggestion_location.problematic_area_begin,
