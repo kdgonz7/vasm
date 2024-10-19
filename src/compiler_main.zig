@@ -17,6 +17,7 @@ pub const Options = struct {
     strict_stylist: bool = false,
     allow_big_numbers: bool = false,
     endian: std.builtin.Endian = .little,
+    optimization_level: u8 = 1,
 };
 
 pub fn printHelpClassic() void {
@@ -78,6 +79,16 @@ pub fn extractOptions(allocator: std.mem.Allocator, arg_slice: [][:0]u8, report:
             return_opt.endian = .big;
         } else if (std.mem.eql(u8, arg_slice[i], "-le")) {
             return_opt.endian = .little;
+        } else if (arg_slice[i][0] == '-' and arg_slice[i][1] == 'O') {
+            if (arg_slice[i].len < 3) {
+                report.errorMessage("-O must be followed by a number", .{});
+                std.process.exit(1);
+            }
+            const op_number: u8 = arg_slice[i][2] - '0';
+
+            if (op_number > return_opt.optimization_level) {
+                return_opt.optimization_level = op_number;
+            }
         } else {
             if (arg_slice[i][0] == '-') {
                 report.errorMessage("unrecognized flag '{s}'", .{arg_slice[i]});
