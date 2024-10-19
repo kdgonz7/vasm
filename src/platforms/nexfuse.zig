@@ -164,9 +164,10 @@ pub fn eachIns(
     args: []parser.Value,
 ) Return {
     _ = vend;
+
     const reg_num = args[0];
 
-    try gen.append(42); //TODO:again.
+    try gen.append(42);
     try gen.append(@intCast(reg_num.toRegister().getRegisterNumber()));
 
     return .ok;
