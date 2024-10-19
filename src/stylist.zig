@@ -58,6 +58,7 @@ pub fn analyze(parent_allocator: std.mem.Allocator, source_text: []const u8) !Su
 
     var line: usize = 1;
     var char: usize = 1;
+
     for (0..source_text.len - 1) |i| {
         if (source_text[i] == '\n') {
             line += 1;
@@ -94,6 +95,46 @@ pub fn analyze(parent_allocator: std.mem.Allocator, source_text: []const u8) !Su
                             .suggestion_type = .non_compliant,
                         },
                     );
+                }
+            },
+            'j' => {
+                // checking if `jmp` label argument has more than one letter
+                // reason being that if jmp is called, folding is off, which means
+                // that the subroutine label names are just a single letter. Multiple letters
+                // are allowed, but will not yield the expected result.
+                // if (source_text.len < i + 2) {
+                //     continue;
+                // }
+
+                if (source_text[i + 1] == 'm' and source_text[i + 2] == 'p') {
+                    // jmp
+                    //    ^
+                    // we are here
+                    var proc_chars: usize = 0;
+                    var m: usize = i + 4;
+
+                    while (source_text[m] != '\n' and source_text[m] != '\r' and source_text[m] != ' ' and source_text[m] != 'j' and std.ascii.isAlphanumeric(source_text[m])) : (m += 1) {
+                        proc_chars += 1;
+                    }
+
+                    char += 5;
+
+                    if (proc_chars > 1) {
+                        try returning_list.append(
+                            Suggestion{
+                                .suggestion_location = SuggestionLocation{
+                                    .line_number = line,
+                                    .problematic_area_begin = char,
+                                    .problematic_area_end = char + 1,
+                                },
+
+                                .suggestion_message = "procedure with multiple letters",
+                                .suggestion_type = .good_practice,
+                            },
+                        );
+                    }
+
+                    char -= 4; // put us back at the `jmp`
                 }
             },
 
@@ -159,4 +200,13 @@ test "trailing" {
     try std.testing.expectEqual(1, suggestions_for.items.len);
     try std.testing.expectEqual(SuggestionType.good_practice, suggestions_for.items[0].suggestion_type);
     try std.testing.expectEqual(5, suggestions_for.items[0].suggestion_location.line_number);
+}
+
+test {
+    const suggestions = try analyze(std.testing.allocator, @embedFile("stylist-tests/jmp-non-folding.asm"));
+    defer suggestions.deinit();
+
+    try std.testing.expectEqual(1, suggestions.items.len);
+    try std.testing.expectEqual(2, suggestions.items[0].suggestion_location.line_number);
+    try std.testing.expectEqual(10, suggestions.items[0].suggestion_location.problematic_area_begin);
 }
