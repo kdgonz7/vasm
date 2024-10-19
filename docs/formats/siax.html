@@ -2483,10 +2483,7 @@ print {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-c" data-lang="c">---
-// map the ALLOCH instruction with the "ALLOCH" string
-ivt_map (cpu-&gt;ivt, I_ALLOCH, "ALLOCH", true);
----</code></pre>
+<pre class="highlight"><code class="language-c" data-lang="c">ivt_map (cpu-&gt;ivt, I_ALLOCH, "ALLOCH", true);</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -2545,10 +2542,67 @@ ivt_map (cpu-&gt;ivt, I_ALLOCH, "ALLOCH", true);
 </div>
 </div>
 </div>
+<div class="sect1">
+<h2 id="_filesystem">Filesystem</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In SiAX, the memory allocation system has deeply rooted support for file system operations. It does this essentially by memory blocks with flags. These flags can be of two different types:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Raw memory</p>
+</li>
+<li>
+<p>A file descriptor.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>File descriptors are used in POSIX as a way to locate, read and write to a file. These file descriptors are simply numbers that are stored by the kernel to manage files. Upon requesting a file descriptor to write or read information, the CPU will be able to read through the list of allocated memory blocks to try and find one that has the file descriptor flag.</p>
+</div>
+<div class="paragraph">
+<p>Those blocks are usually structured with the file descriptor as one of the first bytes and all of the rest being zero with the size depending on how large the file descriptor is.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-c" data-lang="c">I_OPEN_FD (CPU *cpu)
+
+  if (!cpu-&gt;memory_enabled)
+    {
+      cpu_raise (cpu, 102);
+      return (0);
+    }
+
+  /* create a flagged block of memory, if searched it can provide
+  a marker for a file descriptor block. */
+
+  RollocNode *fdb = r_new_chunk (cpu-&gt;memory_chain, 20 * sizeof (byte));
+
+  memset (fdb-&gt;ptr, 0, fdb-&gt;size);
+
+  ((int *)fdb-&gt;ptr)[0] = cpu_next1 (cpu);
+
+  fdb-&gt;flag = FILEDESC; // marks the block as a file descriptor</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_unmaintained">Unmaintained</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>SiAX is unfinished, being in a usable, yet <em>unuseful</em> state.</p>
+</div>
+<div class="paragraph">
+<p>However, VASM is working on a custom implementation of SiAX that will be able to provide useful diagnostics and turn it into a usable format.</p>
+</div>
+</div>
+</div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2024-10-18 21:29:54 -0400
+Last updated 2024-10-18 21:54:26 -0400
 </div>
 </div>
 </body>
