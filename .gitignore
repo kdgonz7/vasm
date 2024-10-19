@@ -4,3 +4,5 @@
 vm
 todo.zig*
 *.out
+runfuse
+*.nexfuse
