@@ -8,6 +8,7 @@ const compiler_output = @import("compiler_output.zig");
 
 const ArrayList = std.ArrayList;
 
+/// Manages the list of passed in compiler options.
 pub const Options = struct {
     files: ArrayList([]const u8),
     output: []const u8 = "a.out",
