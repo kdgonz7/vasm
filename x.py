@@ -16,18 +16,12 @@ ASCIIDOCTOR = which("asciidoctor")
 # The zig binary location
 ZIG = which("zig")
 
-if ZIG is None:
-    print(
-        f"{Fore.YELLOW}{Style.DIM}VASM requires Zig to be installed.{Style.RESET_ALL}{Fore.RESET}"
-    )
 
-    exit(1)
-
-
+# Helper functions
 def system(command: str) -> None:
     command_fragments = command.split(" ")
     command_fragments[0] = (
-        f"{Fore.BLACK}{Style.DIM}{basename(command_fragments[0])}{Style.RESET_ALL}"
+        f" {Fore.BLACK}{Style.DIM}{basename(command_fragments[0])}{Style.RESET_ALL}"
     )
 
     print(
@@ -39,6 +33,27 @@ def system(command: str) -> None:
 
 def ensure_dir(path):
     makedirs(path, exist_ok=True)
+
+
+# Ensure steps
+def ensure_zig():
+    if ZIG is None:
+        print(
+            f"{Fore.YELLOW}{Style.DIM}EnsureZig failed: VASM requires Zig to be installed.{Style.RESET_ALL}{Fore.RESET}"
+        )
+
+        exit(1)
+    else:
+        print(f"has zig.....{Fore.GREEN}yes{Style.RESET_ALL}{Fore.RESET}")
+
+
+def ensure_asciidoc():
+    if ASCIIDOCTOR is None:
+        print(
+            f"{Fore.YELLOW}{Style.DIM}EnsureAsciiDoc failed: VASM requires Asciidoctor to be installed.{Style.RESET_ALL}{Fore.RESET}"
+        )
+
+        exit(1)
 
 
 def tests():
@@ -55,15 +70,6 @@ def clean():
     """Cleans any zig cache files."""
     system("rm zig-out -rf")
     system("rm .zig-cache -rf")
-
-
-def ensure_asciidoc():
-    if ASCIIDOCTOR is None:
-        print(
-            f"{Fore.YELLOW}{Style.DIM}EnsureAsciiDoc failed: VASM requires Asciidoctor to be installed.{Style.RESET_ALL}{Fore.RESET}"
-        )
-
-        exit(1)
 
 
 def docs():
@@ -145,12 +151,12 @@ commands = {
     "tests": {
         "runner": tests,
         "description": "Builds the tests suite",
-        "relies_on": [],
+        "relies_on": [ensure_zig],
     },
     "tests-summary": {
         "runner": tests_summary,
         "description": "Builds the tests suite",
-        "relies_on": [],
+        "relies_on": [ensure_zig],
     },
     "clean": {
         "runner": clean,
@@ -175,12 +181,12 @@ commands = {
     "build": {
         "runner": vasm,
         "description": "Builds the VASM program.",
-        "relies_on": [],
+        "relies_on": [ensure_zig],
     },
     "vasm": {
         "runner": vasm,
         "description": "(alias to build)",
-        "relies_on": [],
+        "relies_on": [ensure_zig],
     },
     "site": {
         "runner": site,
@@ -191,6 +197,11 @@ commands = {
         "runner": man_pages,
         "description": "Builds the manual pages (also places them in the docs/man directory)",
         "relies_on": [ensure_asciidoc],
+    },
+    "ensure-zig": {
+        "runner": ensure_zig,
+        "description": "Ensures that zig is installed",
+        "relies_on": [],
     },
 }
 
