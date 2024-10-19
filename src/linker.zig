@@ -114,6 +114,9 @@ pub fn Linker(comptime binary_size: type) type {
                     try self.appendByte(ctx.procedure_heading_byte);
                     try self.appendByte(@bitCast(item.key_ptr.*[0]));
                     try self.appendBytes(item.value_ptr.items[0..]); // body of function
+                    if (ctx.proc_end_byte) {
+                        try self.appendByte(ctx.end_byte);
+                    }
                     try self.appendByte(ctx.procedure_closing_byte);
                 }
             }
@@ -192,6 +195,7 @@ test "creating and using a linker to create a usable binary" {
         .compile = false,
         .vasm_header = false,
         .use_end_byte = false,
+        .proc_end_byte = false,
     }, vend1.procedure_map);
 
     try std.testing.expectEqual(1, link.binary.items.len);
@@ -221,6 +225,7 @@ test "creating and using a linker to create a usable binary w/ procedures using 
         .compile = true,
         .vasm_header = false,
         .use_end_byte = false,
+        .proc_end_byte = false,
     }, vend1.procedure_map);
 
     try std.testing.expectEqual(4, link.binary.items.len);
@@ -254,6 +259,7 @@ test "creating and using a linker to create a usable binary w/ procedures using 
         .end_byte = 12,
         .compile = true,
         .vasm_header = false,
+        .proc_end_byte = false,
     }, vend1.procedure_map);
 
     try std.testing.expectEqual(5, link.binary.items.len);
@@ -288,6 +294,7 @@ test "creating and using a linker to create a usable binary and writing it to a 
         .end_byte = 12,
         .compile = true,
         .vasm_header = false,
+        .proc_end_byte = false,
     }, vend1.procedure_map);
 
     try std.testing.expectEqual(5, link.binary.items.len);
@@ -324,6 +331,7 @@ test "creating and using a linker using linkOptimized" {
         .end_byte = 12,
         .compile = true,
         .vasm_header = false,
+        .proc_end_byte = false,
     }, &vend1, vend1.procedure_map);
 
     try std.testing.expectEqual(1, link.binary.items.len);
