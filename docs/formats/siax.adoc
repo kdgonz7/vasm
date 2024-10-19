@@ -44,4 +44,4 @@ SiAX has dead code awareness by its rules and structure. The way that it checks 
 
 == Error Handling
 
-In SiAX, the CPU exits a program forcefully by using the C `abort`` function upon error. This function can, while handling the program state gracefully, leave cryptic messages that are unable to provide useful information as to why the program crashed. Due to it being unmaintained, it currently cannot provide accurate diagnostics as to what happened relative to either the SiAX source code or the program data itself.
+In SiAX, the CPU exits a program forcefully by using the C `abort` function upon error. This function can, while handling the program state gracefully, leave cryptic messages that are unable to provide useful information as to why the program crashed. Due to it being unmaintained, it currently cannot provide accurate diagnostics as to what happened relative to either the SiAX source code or the program data itself.
