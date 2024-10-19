@@ -207,7 +207,9 @@ pub fn Vendor(comptime format_type: type) type {
                                         return error.RegisterNumberTooLarge;
                                     }
                                 }
+
                                 const res = try map_item.function(&generator, self, ins.parameters.items);
+
                                 switch (res) {
                                     .ok => {},
                                     else => {
@@ -219,6 +221,7 @@ pub fn Vendor(comptime format_type: type) type {
                                 return error.InstructionDoesntExist;
                             }
 
+                            // add the null byte to the end of the function if needed
                             if (self.nul_after_sequence) {
                                 try generator.append(self.nul_byte);
                             }
