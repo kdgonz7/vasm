@@ -23,5 +23,4 @@ Quits compilation early if stylist reports any style or potential UB issues. Use
 
 -le, --large-numbers::
 Allows for large numbers to be in the program. (disabling lex-time checks for large numbers)
-
 It is recommended to keep this option ON as it prevents UB(footnote:[UB stands for "Undefined Behavior". Essentially when anything uncontrollable or unpredictable happens within the program that is not going to or not currently planned to be fixed. A way for developers to cut off specific parts of their program that are too non-conforming to be manageable.]) from occuring within the program.
