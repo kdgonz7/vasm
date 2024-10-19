@@ -233,4 +233,17 @@ pub const Reporter = struct {
 
         std.process.exit(1);
     }
+
+    pub fn stylistMessage(self: *Reporter, comptime format: []const u8, args: anytype) void {
+        const wri = self.stderr.writer();
+
+        self.setStderrColor(.bright_cyan);
+
+        wri.print("stylist error: ", .{}) catch unreachable;
+
+        self.setStderrColor(.reset);
+
+        wri.print(format, args) catch unreachable;
+        wri.print("\n", .{}) catch unreachable;
+    }
 };
