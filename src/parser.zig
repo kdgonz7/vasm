@@ -359,7 +359,6 @@ pub const Parser = struct {
                 },
 
                 else => {
-                    std.debug.print("{any}\n", .{current_token.*});
                     return error.UnexpectedToken;
                 },
             }
@@ -391,8 +390,6 @@ pub const Parser = struct {
             OpKind.newline => {},
 
             else => {
-                std.debug.print("{any}\n", .{operator});
-
                 return error.UnexpectedToken;
             },
         }
@@ -787,6 +784,30 @@ test "creating and using a parser with trailing commas" {
     var lexer = Lexer.init(allocator);
 
     lexer.setInputText("start:\n   halt R1,");
+    try lexer.startLexingInputText();
+
+    var parser = Parser.init(allocator, &lexer.stream);
+    defer parser.deinit();
+
+    var root = try parser.createRootNode();
+
+    try std.testing.expectEqual(1, root.asRoot().children.items.len);
+
+    const start = root.asRoot().children.items[0].procedure;
+
+    try std.testing.expectEqual(1, start.children.items.len);
+    try std.testing.expectEqual(1, start.children.items[0].instruction_call.parameters.items.len);
+    try std.testing.expectEqualStrings("halt", start.children.items[0].instruction_call.name.identifier_string);
+}
+
+test "creating and using a parser with trailing commas and newline " {
+    var arena = createTestArena();
+    const allocator = arena.allocator();
+    defer arena.deinit();
+
+    var lexer = Lexer.init(allocator);
+
+    lexer.setInputText("\n\n\nstart:\n   halt R1,");
     try lexer.startLexingInputText();
 
     var parser = Parser.init(allocator, &lexer.stream);
