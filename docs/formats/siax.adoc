@@ -1,0 +1,33 @@
+= SiAX
+
+== Introduction
+
+SiAX (*See-Yacks*) is a linked-memory no confusion binary format.
+
+Originally designed in a Programming 2.0 class, SiAX takes a differing approach to memory usage as well as memory manipulation and reading. SiAX, on the VM hierarchy, is one of the newer bytecode formats, having been made in March of 2024, with the last full-fledged bytecode format being made 10 months ago (almost a year!)
+
+== Memory Hierarchy
+
+SiAX uses a memory system called "Rolloc", which stands for **Ro**lling a**lloc**ations. This system creates a linked, list-like structure that can store multiple different kinds of information and is weakly garbage collected. SiAX utilizes this system for file creation, reading, and writing. SiAX uses stack-like iteration algorithms for this linked data structure and manages memory using it as well.
+
+Ultimately, when the program ends, each node is iterated and freed respectfully. 
+
+== IVT
+
+The **Interrupt Vector Table** stores addresses of functions used in the main CPU. These control the data manipulation, functionality, and file management that SiAX provides.
+
+== The Brains
+
+
+
+The CPU has a mutable state that is changed throughout the lifetime of a program. For example: when trying to open a binary, the CPU will be in an **OFF** state until the program is actually starting to be read. Once the program is begin read, this will set the state **ON** and will also configure the program counter.
+
+However, there are some caveats to this method, such as if:
+
+* The interrupt vector table (IVT) has not been set up
+** That can cause undefined behavior and can cause a crash in either SiAX or the program itself.
+*** ways to mitigate or prevent a lot of these race conditions and issues from happening and do not access data that you have not properly initialize via the SiAX documentation.
+
+== Dead Code
+
+When there are extra bytes at the end of the binary payload, SiAX's internal CPU can report these extra bytes into stdout. 
