@@ -361,11 +361,13 @@ pub fn cmpIns(
     const register1 = args[0].toRegister();
     const register2 = args[1].toRegister();
     const label = args[2].toIdentifier();
+    const label2 = args[3].toIdentifier();
 
     try gen.append(51);
     try gen.append(@intCast(register1.getRegisterNumber()));
     try gen.append(@intCast(register2.getRegisterNumber()));
     try gen.append(@bitCast(label.identifier_string[0])); // use the first letter of label (assuming folding is off)
+    try gen.append(@bitCast(label2.identifier_string[0])); // use the first letter of label (assuming folding is off)
 
     return .ok;
 }
