@@ -2467,10 +2467,18 @@ print {
 <dd>
 <p>Quits compilation early if stylist reports any style or potential UB issues. Useful for writing strictly typed LR assembly.</p>
 </dd>
-<dt class="hdlist1">-le, --large-numbers</dt>
+<dt class="hdlist1">-ln, --allow-large-numbers</dt>
 <dd>
 <p>Allows for large numbers to be in the program. (disabling lex-time checks for large numbers)
 It is recommended to keep this option ON as it prevents UB <sup class="footnote">[<a id="_footnoteref_1" class="footnote" href="#_footnotedef_1" title="View footnote.">1</a>]</sup> from occuring within the program.</p>
+</dd>
+<dt class="hdlist1">-le</dt>
+<dd>
+<p>Specifies the <code>endian</code> flag as <strong>big</strong> in the compiler&#8217;s options. The endian flag controls the endianness of the binary generation.</p>
+</dd>
+<dt class="hdlist1">-be</dt>
+<dd>
+<p>Specifies the <code>endian</code> flag as <strong>little</strong> in the compiler&#8217;s options. The endian flag controls the endianness of the binary generation.</p>
 </dd>
 </dl>
 </div>
@@ -2515,7 +2523,7 @@ It is recommended to keep this option ON as it prevents UB <sup class="footnote"
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2024-10-19 00:54:24 -0400
+Last updated 2024-10-19 09:45:05 -0400
 </div>
 </div>
 </body>

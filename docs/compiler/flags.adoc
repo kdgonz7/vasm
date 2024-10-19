@@ -11,9 +11,15 @@ Disables running stylist when compiling a program. This disables any compile-tim
 --strict | --enforce-stylist::
 Quits compilation early if stylist reports any style or potential UB issues. Useful for writing strictly typed LR assembly.
 
--le, --large-numbers::
+-ln, --allow-large-numbers::
 Allows for large numbers to be in the program. (disabling lex-time checks for large numbers)
 It is recommended to keep this option ON as it prevents UB footnote:[UB stands for "Undefined Behavior". Essentially when anything uncontrollable or unpredictable happens within the program that is not going to or not currently planned to be fixed. A way for developers to cut off specific parts of their program that are too non-conforming to be manageable.] from occuring within the program.
+
+-le::
+Specifies the `endian` flag as *big* in the compiler's options. The endian flag controls the endianness of the binary generation.
+
+-be::
+Specifies the `endian` flag as *little* in the compiler's options. The endian flag controls the endianness of the binary generation.
 
 == Positional Flags
 
