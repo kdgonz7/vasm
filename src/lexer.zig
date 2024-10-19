@@ -399,6 +399,7 @@ pub const Lexer = struct {
         }
 
         self.incrementLineNumber();
+        self.position -= 1;
     }
 
     pub fn splitInputTextIntoLines(self: *Lexer) std.mem.SplitIterator(u8, std.mem.DelimiterType.sequence) {
