@@ -3,6 +3,7 @@ from os import system as internal_system, makedirs, listdir, walk
 from os.path import basename, join
 from shutil import which
 from colorama import Fore, Style
+from webbrowser import open as open_url
 
 # The format used to generate web docs
 WEB_FORMAT = "html"
@@ -105,6 +106,22 @@ def vasm():
     system(f"{ZIG} build --summary all")
 
 
+def find_bad_lines():
+    """locates any std.debug.print() calls in the source code"""
+    print("reporting on source code...")
+    for dir_path, dir_names, files in walk("src"):
+        for file in files:
+            if file.endswith(".zig"):
+                with open(join(dir_path, file), "r", encoding="utf-8") as f:
+                    lines = f.read()
+
+                    for line in lines:
+                        if line.find("std.debug.print") != -1:
+                            print(f"{join(dir_path, file)}: {line.strip()}")
+
+                print(f"scanned {join(dir_path, file)}")
+
+
 def all():
     tests_summary()
     docs()
@@ -201,6 +218,21 @@ commands = {
     "ensure-zig": {
         "runner": ensure_zig,
         "description": "Ensures that zig is installed",
+        "relies_on": [],
+    },
+    "ensure-asciidoc": {
+        "runner": ensure_asciidoc,
+        "description": "Ensures that asciidoctor is installed",
+        "relies_on": [],
+    },
+    "open-website": {
+        "runner": open_website,
+        "description": "Opens the website",
+        "relies_on": [],
+    },
+    "find-bad-lines": {
+        "runner": find_bad_lines,
+        "description": "Finds any std.debug.print() calls in the source code",
         "relies_on": [],
     },
 }
