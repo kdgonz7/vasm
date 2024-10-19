@@ -194,10 +194,6 @@ pub const Lexer = struct {
         while (!self.atEndOfInput()) {
             const current_character = self.getCurrentCharacter();
 
-            if (current_character == '\n') {
-                self.incrementLineNumber();
-            }
-
             try self.matchAndRedirect(current_character);
 
             self.incrementCharacterPosition();
@@ -236,6 +232,8 @@ pub const Lexer = struct {
                         .position = self.getCurrentPosition(),
                     },
                 });
+
+                self.incrementLineNumber();
             },
 
             ':' => {
@@ -398,7 +396,6 @@ pub const Lexer = struct {
             self.incrementCharacterPosition();
         }
 
-        self.incrementLineNumber();
         self.position -= 1;
     }
 
@@ -513,7 +510,9 @@ test "using comments" {
     lexer.setInputText(";; @sub:\nsub");
     try lexer.startLexingInputText();
     try std.testing.expectEqual(2, lexer.getLineNumber());
-    try std.testing.expectEqual(1, lexer.stream.getSizeOfStream());
+    try std.testing.expectEqual(2, lexer.stream.getSizeOfStream()); //\n is an operator
+    try std.testing.expectEqual(.operator, lexer.stream.internal_list.items[0].getType());
+    try std.testing.expectEqual(.newline, lexer.stream.internal_list.items[0].operator.kind);
 }
 
 test "using literals in a simple expression" {
