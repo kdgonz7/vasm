@@ -57,15 +57,16 @@ def clean():
     system("rm .zig-cache -rf")
 
 
-def docs():
-    """Builds the documentation."""
+def ensure_asciidoc():
     if ASCIIDOCTOR is None:
         print(
-            f"{Fore.YELLOW}{Style.DIM}VASM requires Asciidoctor to be installed.{Style.RESET_ALL}{Fore.RESET}"
+            f"{Fore.YELLOW}{Style.DIM}EnsureAsciiDoc failed: VASM requires Asciidoctor to be installed.{Style.RESET_ALL}{Fore.RESET}"
         )
 
         exit(1)
 
+
+def docs():
     # make sure the man/man1 directories exist
     ensure_dir("man/man1")
     ensure_dir("docs/man/")
@@ -125,8 +126,17 @@ a directive can be any of the following:
 """
     )
 
-    for command in commands:
+    # sort command by how many reliers they have
+    new_commands = sorted(
+        commands, key=lambda command: len(commands[command]["relies_on"]), reverse=False
+    )
+    for command in new_commands:
         print(f"\t{command.ljust(max_size() +2)}{commands[command]['description']}")
+
+        if "relies_on" in commands[command] and len(commands[command]["relies_on"]) > 0:
+            print(
+                f"{''.ljust(max_size() +12)}relies on steps: {Style.BRIGHT}{', '.join([x.__name__ for x in commands[command]['relies_on']])}{Style.RESET_ALL}"
+            )
 
     exit(0)
 
@@ -135,47 +145,66 @@ commands = {
     "tests": {
         "runner": tests,
         "description": "Builds the tests suite",
+        "relies_on": [],
     },
     "tests-summary": {
         "runner": tests_summary,
         "description": "Builds the tests suite",
+        "relies_on": [],
     },
     "clean": {
         "runner": clean,
         "description": "Cleans any zig cache files",
+        "relies_on": [],
     },
     "docs": {
         "runner": docs,
         "description": "Builds the documentation",
+        "relies_on": [ensure_asciidoc],
     },
     "all": {
-        "runner": all,
+        "runner": None,
         "description": "Builds everything including stylist, vasm.adoc, and docs and runs tests silently",
+        "relies_on": [ensure_asciidoc, tests, docs, man_pages, vasm, site],
     },
     "help": {
         "runner": help_make,
         "description": "prints the help menu.",
+        "relies_on": [],
     },
     "build": {
         "runner": vasm,
         "description": "Builds the VASM program.",
+        "relies_on": [],
     },
     "vasm": {
         "runner": vasm,
         "description": "(alias to build)",
+        "relies_on": [],
     },
     "site": {
         "runner": site,
         "description": "Builds the website documentation",
+        "relies_on": [ensure_asciidoc],
     },
     "man-pages": {
         "runner": man_pages,
         "description": "Builds the manual pages (also places them in the docs/man directory)",
+        "relies_on": [ensure_asciidoc],
     },
 }
 
 for arg in argv[1:]:
     if commands.get(arg) is not None:
-        commands[arg]["runner"]()
+        for relier in commands[arg]["relies_on"]:
+            if relier is not None:
+                print(
+                    f"{Fore.MAGENTA}running dependent step{Fore.RESET}: {relier.__name__}"
+                )
+                relier()
+
+        # headless commands are allowed
+        if commands[arg]["runner"] is not None:
+            commands[arg]["runner"]()
     else:
         print(f"unknown build directive: {arg}")
