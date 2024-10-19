@@ -19,12 +19,23 @@ pub const Options = struct {
     endian: std.builtin.Endian = .little,
 };
 
+pub fn printHelpClassic() void {
+    const writer = std.io.getStdOut().writer();
+
+    _ = writer.print(@embedFile("./cli/help.adoc"), .{}) catch unreachable;
+}
+
 pub fn runManPage(allocator: anytype, report: anytype) void {
+    _ = report;
     if (std.process.can_execv) {
         std.process.execv(allocator, &[_][]const u8{ "man", "vasm" }) catch {
-            report.errorMessage("no man installed.", .{});
+            printHelpClassic();
         };
+    } else {
+        printHelpClassic();
     }
+
+    std.process.exit(0);
 }
 
 pub fn extractOptions(allocator: std.mem.Allocator, arg_slice: [][:0]u8, report: anytype) Options {
