@@ -5,6 +5,7 @@
 
 a:
 ; increment R1, this will go up until it's equal to 'A'
+  each R1
   inc R1
 ; jump back to comparisons
 ; forward referencing
