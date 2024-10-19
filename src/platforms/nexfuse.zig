@@ -279,6 +279,8 @@ pub fn nopIns(
     return .ok;
 }
 
+// NOTE: the LAR instruction in NexFUSE has a bug that disallows its usage when
+// NOTE: one opcode is used. The signature does not match up with its usage.
 pub fn larIns(
     gen: *codegen.Generator(u8),
     vend: *codegen.Vendor(u8),
