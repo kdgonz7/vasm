@@ -173,51 +173,51 @@ pub fn runCompilerFrontend() !void {
     }
 
     // for each file, compile it
-    for (opts.files.items) |file| {
-        var lex = lexer.Lexer.init(allocator);
-        var pars = parser.Parser.init(allocator, &lex.stream);
+    const file = opts.files.items[0];
 
-        const file_body = std.fs.cwd().readFileAlloc(allocator, file, std.math.maxInt(usize)) catch |err| {
-            report.errorMessage("could not create buffer for file '{s}` ({any})", .{ file, err });
-            std.process.exit(1);
-        };
+    var lex = lexer.Lexer.init(allocator);
+    var pars = parser.Parser.init(allocator, &lex.stream);
 
-        lex.setInputText(file_body);
+    const file_body = std.fs.cwd().readFileAlloc(allocator, file, std.math.maxInt(usize)) catch |err| {
+        report.errorMessage("could not create buffer for file '{s}` ({any})", .{ file, err });
+        std.process.exit(1);
+    };
 
-        if (opts.stylist) {
-            diagnostic.reportStylist(allocator, &report, .{
-                .filename = file,
-                .body = file_body,
-                .lexer = &lex,
-                .options = opts,
-            });
-        }
+    lex.setInputText(file_body);
 
-        const selected_vm = vendorStringToVendor(opts.format.?);
-
-        if (selected_vm == .unknown) {
-            report.errorMessage("unknown format '{s}'", .{opts.format.?});
-            report.leaveNote("format enumerated to '{s}'", .{@tagName(selected_vm)});
-            std.process.exit(1);
-        }
-
-        lex.rules.max_number_size = checkNumberSizeFor(selected_vm);
-        lex.rules.check_for_big_numbers = !opts.allow_big_numbers;
-
-        lex.startLexingInputText() catch |err| report.printError(&lex, file, err);
-
-        const ast = pars.createRootNode() catch |err| report.astError(err, lex);
-
-        try generateMethod(selected_vm, .{
-            .parent_allocator = allocator,
-            .tree = ast,
-            .outfile = opts.output,
-            .file_name = file,
+    if (opts.stylist) {
+        diagnostic.reportStylist(allocator, &report, .{
+            .filename = file,
+            .body = file_body,
             .lexer = &lex,
-            .report = &report,
-            .endian = opts.endian,
+            .options = opts,
         });
     }
+
+    const selected_vm = vendorStringToVendor(opts.format.?);
+
+    if (selected_vm == .unknown) {
+        report.errorMessage("unknown format '{s}'", .{opts.format.?});
+        report.leaveNote("format enumerated to '{s}'", .{@tagName(selected_vm)});
+        std.process.exit(1);
+    }
+
+    lex.rules.max_number_size = checkNumberSizeFor(selected_vm);
+    lex.rules.check_for_big_numbers = !opts.allow_big_numbers;
+
+    lex.startLexingInputText() catch |err| report.printError(&lex, file, err);
+
+    const ast = pars.createRootNode() catch |err| report.astError(err, lex);
+
+    try generateMethod(selected_vm, .{
+        .parent_allocator = allocator,
+        .tree = ast,
+        .outfile = opts.output,
+        .file_name = file,
+        .lexer = &lex,
+        .report = &report,
+        .endian = opts.endian,
+    });
 }
 
 pub fn main() !void {
