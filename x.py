@@ -225,11 +225,6 @@ commands = {
         "description": "Ensures that asciidoctor is installed",
         "relies_on": [],
     },
-    "open-website": {
-        "runner": open_website,
-        "description": "Opens the website",
-        "relies_on": [],
-    },
     "find-bad-lines": {
         "runner": find_bad_lines,
         "description": "Finds any std.debug.print() calls in the source code",
