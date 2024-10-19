@@ -28,3 +28,6 @@ Usage: vasm FILE [OPTIONS...]
 
 -o, --output FILE::
     Specifies the output location of the binary. This location *must* be a file, it can not be a directory.
+
+-O[N]::
+Sets the optimization level to *N*. For some architectures this will have an effect on what context is chosen and passed to the generator, and others it may not.

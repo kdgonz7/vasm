@@ -50,6 +50,9 @@ Specifies the output format for the binary. This output format will be the basis
 -o, --output FILE::
 Specifies the output location of the binary. This location *must* be a file, it can not be a directory.
 
+-O[N]::
+Sets the optimization level to *N*. For some architectures this will have an effect on what context is chosen and passed to the generator, and others it may not.
+
 == Vendors
 
 A "vendor" is defined as information to help generate binaries based on documented instructions sets. Instead of mapping each instruction to a number, vasm supports generation of binaries through hand-implemented functions which are children of instructions. Using the VASM zig API, the OpenLUD vendor is created using the following method:
