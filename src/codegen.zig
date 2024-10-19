@@ -122,6 +122,10 @@ pub fn Vendor(comptime format_type: type) type {
         nul_after_sequence: bool = false,
         nul_byte: format_type = 0,
 
+        /// Should the END byte be added at the end of a procedure?
+        procedure_add_end: bool = false,
+        end_byte: format_type = 0,
+
         /// A list of instruction results ran from each instruction.
         results: std.ArrayList(InstructionResult),
 
@@ -230,6 +234,10 @@ pub fn Vendor(comptime format_type: type) type {
 
                     else => {},
                 }
+            }
+
+            if (self.procedure_add_end) {
+                try generator.append(self.end_byte);
             }
 
             try self.procedure_map.put(procedure_name, generator.binary);
