@@ -2,16 +2,6 @@
 
 == Static Flags
 
--f, --format FORMAT::
-Specifies the output format for the binary. This output format will be the basis for any operations moving forward. This format flag is converted from a string to an enum that contains the format's information. The format is used for
-
-* Lexer number sizes
-* Vendor sizes
-* Vendor name
-
--o, --output FILE::
-Specifies the output location of the binary. This location *must* be a file, it can not be a directory.
-
 -h, --help::
 Shows the help menu. Note: this is a work in progress and currently does not show anything on Windows devices because of execve being used to run `man`. As the frontend begins to become stabilized this will change.
 
@@ -24,3 +14,15 @@ Quits compilation early if stylist reports any style or potential UB issues. Use
 -le, --large-numbers::
 Allows for large numbers to be in the program. (disabling lex-time checks for large numbers)
 It is recommended to keep this option ON as it prevents UB footnote:[UB stands for "Undefined Behavior". Essentially when anything uncontrollable or unpredictable happens within the program that is not going to or not currently planned to be fixed. A way for developers to cut off specific parts of their program that are too non-conforming to be manageable.] from occuring within the program.
+
+== Positional Flags
+
+-f, --format FORMAT::
+Specifies the output format for the binary. This output format will be the basis for any operations moving forward. This format flag is converted from a string to an enum that contains the format's information. The format is used for
+
+* Lexer number sizes
+* Vendor sizes
+* Vendor name
+
+-o, --output FILE::
+Specifies the output location of the binary. This location *must* be a file, it can not be a directory.

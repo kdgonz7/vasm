@@ -2455,27 +2455,6 @@ print {
 <div class="sectionbody">
 <div class="dlist">
 <dl>
-<dt class="hdlist1">-f, --format FORMAT</dt>
-<dd>
-<p>Specifies the output format for the binary. This output format will be the basis for any operations moving forward. This format flag is converted from a string to an enum that contains the format&#8217;s information. The format is used for</p>
-<div class="ulist">
-<ul>
-<li>
-<p>Lexer number sizes</p>
-</li>
-<li>
-<p>Vendor sizes</p>
-</li>
-<li>
-<p>Vendor name</p>
-</li>
-</ul>
-</div>
-</dd>
-<dt class="hdlist1">-o, --output FILE</dt>
-<dd>
-<p>Specifies the output location of the binary. This location <strong>must</strong> be a file, it can not be a directory.</p>
-</dd>
 <dt class="hdlist1">-h, --help</dt>
 <dd>
 <p>Shows the help menu. Note: this is a work in progress and currently does not show anything on Windows devices because of execve being used to run <code>man</code>. As the frontend begins to become stabilized this will change.</p>
@@ -2497,6 +2476,36 @@ It is recommended to keep this option ON as it prevents UB <sup class="footnote"
 </div>
 </div>
 </div>
+<div class="sect1">
+<h2 id="_positional_flags">Positional Flags</h2>
+<div class="sectionbody">
+<div class="dlist">
+<dl>
+<dt class="hdlist1">-f, --format FORMAT</dt>
+<dd>
+<p>Specifies the output format for the binary. This output format will be the basis for any operations moving forward. This format flag is converted from a string to an enum that contains the format&#8217;s information. The format is used for</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Lexer number sizes</p>
+</li>
+<li>
+<p>Vendor sizes</p>
+</li>
+<li>
+<p>Vendor name</p>
+</li>
+</ul>
+</div>
+</dd>
+<dt class="hdlist1">-o, --output FILE</dt>
+<dd>
+<p>Specifies the output location of the binary. This location <strong>must</strong> be a file, it can not be a directory.</p>
+</dd>
+</dl>
+</div>
+</div>
+</div>
 </div>
 <div id="footnotes">
 <hr>
@@ -2506,7 +2515,7 @@ It is recommended to keep this option ON as it prevents UB <sup class="footnote"
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2024-10-19 00:46:26 -0400
+Last updated 2024-10-19 00:54:24 -0400
 </div>
 </div>
 </body>
