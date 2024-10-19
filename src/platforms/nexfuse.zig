@@ -642,8 +642,8 @@ test {
 test {
     try expectBin(
         u8,
-        "a: echo 'A'\n_start:\n   cmp R1,R2,a\n",
-        &[_]u8{ 10, 97, 40, 65, 0, 22, 128, 51, 1, 2, 97, 0, 22 },
+        "a: echo 'A'\n_start:\n   cmp R1,R2,a,b\n",
+        &[_]u8{ 10, 97, 40, 65, 0, 22, 128, 51, 1, 2, 97, 98, 0, 22 },
         ctx_no_folding,
         runtime,
     );
