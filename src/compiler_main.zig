@@ -14,6 +14,7 @@ pub const Options = struct {
     format: ?[]const u8 = null,
     stylist: bool = true,
     strict_stylist: bool = false,
+    allow_big_numbers: bool = false,
 };
 
 pub fn runManPage(allocator: anytype, report: anytype) void {
@@ -52,6 +53,8 @@ pub fn extractOptions(allocator: std.mem.Allocator, arg_slice: [][:0]u8, report:
             return_opt.stylist = false;
         } else if (std.mem.eql(u8, arg_slice[i], "--strict") or std.mem.eql(u8, arg_slice[i], "--enforce-stylist")) {
             return_opt.strict_stylist = true;
+        } else if (std.mem.eql(u8, arg_slice[i], "--large-numbers") or std.mem.eql(u8, arg_slice[i], "-le")) {
+            return_opt.allow_big_numbers = true;
         } else {
             if (arg_slice[i][0] == '-') {
                 report.errorMessage("unrecognized flag '{s}'", .{arg_slice[i]});
