@@ -13,6 +13,7 @@ const compiler = @import("compiler_main.zig");
 const compiler_output = @import("compiler_output.zig");
 const compiler_vendors = @import("compiler_vendors.zig");
 const stylist = @import("stylist.zig");
+const diagnostic = @import("stylist_diagnostic.zig");
 
 const stringCompare = std.ascii.eqlIgnoreCase;
 
@@ -198,46 +199,6 @@ fn generateMethod(format: anytype, ctx: anytype) !void {
 //     }
 // }
 
-pub fn reportStylist(allocator: anytype, reporter: *compiler_output.Reporter, ctx: anytype) void {
-    const report = stylist.analyze(allocator, ctx.body) catch {
-        reporter.errorMessage("failed to run stylist.", .{});
-        std.process.exit(1);
-    };
-
-    for (report.items) |ding| {
-        reporter.errorMessage("{s}:{d}:{d}: ({s}) {s}", .{
-            ctx.filename,
-            ding.suggestion_location.line_number,
-            ding.suggestion_location.problematic_area_begin,
-            suggestionToStr(ding.suggestion_type),
-            ding.suggestion_message,
-        });
-
-        if (ding.suggestion_location.line_number > 0) {
-            reporter.getCustomarySourceLocationUsingLexer(
-                &ctx.lexer,
-                ding.suggestion_location.problematic_area_begin,
-                ding.suggestion_location.problematic_area_end,
-                ding.suggestion_location.line_number - 1,
-            );
-        }
-    }
-
-    if (report.items.len > 0 and ctx.options.strict_stylist) {
-        reporter.errorMessage("too many stylist errors, can not continue. (--enforce-stylist)", .{});
-        std.process.exit(1);
-    }
-}
-
-pub fn suggestionToStr(suggestion: stylist.SuggestionType) []const u8 {
-    return switch (suggestion) {
-        .good_practice => "good practice",
-        .undefined_behavior => "UB",
-        .non_compliant => "non-compliant",
-        .regular => "regular",
-    };
-}
-
 // TODO: if you're here from the compiler output file i want you (future me) to know that
 // this is looking pretty good, don't fuck up anything.
 // we just need to reimplement the commented out code modularly, which means
@@ -267,7 +228,7 @@ pub fn main() !void {
         lex.setInputText(file_body);
 
         if (opts.stylist) {
-            reportStylist(allocator, &report, .{
+            diagnostic.reportStylist(allocator, &report, .{
                 .filename = file,
                 .body = file_body,
                 .lexer = &lex,
