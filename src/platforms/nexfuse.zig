@@ -85,6 +85,8 @@ pub const ctx_folding = .{
 pub fn runtime(vend: *codegen.Vendor(u8)) !void {
     vend.nul_after_sequence = true;
     vend.nul_byte = 0;
+    vend.procedure_add_end = true;
+    vend.end_byte = 22;
 
     try vend.createAndImplementInstruction(u8, "echo", &echoIns);
     try vend.createAndImplementInstruction(u8, "mov", &moveIns);
@@ -401,13 +403,14 @@ pub fn gosubIns(
     vend: *codegen.Vendor(u8),
     args: []parser.Value,
 ) Return {
-    _ = vend;
-
     const label = args[0].toIdentifier();
 
     // jmp to label
     try gen.append(15);
     try gen.append(@bitCast(label.identifier_string[0]));
+
+    // so the optimizer doesn't cut the label
+    try vend.peephole_optimizer.remember(label.identifier_string);
 
     return .ok;
 }
