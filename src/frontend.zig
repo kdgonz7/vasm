@@ -257,7 +257,6 @@ pub fn main() !void {
         }
 
         lex.rules.check_for_big_numbers = !opts.allow_big_numbers;
-
         lex.startLexingInputText() catch |err| report.printError(&lex, file, err);
 
         const ast = pars.createRootNode() catch |err| {
