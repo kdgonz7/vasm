@@ -354,9 +354,7 @@ pub fn cmpIns(
     args: []parser.Value,
 ) Return {
     // CMP compares two registers and then jumps to a label
-    // [reg1] [reg2] [label] | r1[..]==r[2] JUMP label
-
-    _ = vend;
+    // [reg1] [reg2] [label] [label2] | r1[..]==r[2] JUMP label ELSE JUMP label2
 
     const register1 = args[0].toRegister();
     const register2 = args[1].toRegister();
@@ -368,6 +366,10 @@ pub fn cmpIns(
     try gen.append(@intCast(register2.getRegisterNumber()));
     try gen.append(@bitCast(label.identifier_string[0])); // use the first letter of label (assuming folding is off)
     try gen.append(@bitCast(label2.identifier_string[0])); // use the first letter of label (assuming folding is off)
+
+    // remember these
+    try vend.peephole_optimizer.remember(label.identifier_string);
+    try vend.peephole_optimizer.remember(label2.identifier_string);
 
     return .ok;
 }
