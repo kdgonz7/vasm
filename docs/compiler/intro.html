@@ -2451,65 +2451,72 @@ print {
 </div>
 <div id="content">
 <div class="sect1">
-<h2 id="_what_is_vasm">What is VASM?</h2>
+<h2 id="_introduction">Introduction</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>VASM is an assembly compiler for the NexFUSE, OpenLUD, and MercuryPIC formats, as well as many others.</p>
+<p>The VASM compiler is a compiler for an assembly-like language that is designed to be efficient, small, and compatible with multiple binary formats. VASM can be used to generate optimized binaries that run on different platforms with little to no changes, depending on the standard. However, this deficit is not guaranteed as different formats have additional regulations and specifications regarding the instruction set.</p>
+</div>
+<div class="paragraph">
+<p>VASM does its best to mitigate these effects by allowing for different standards to be selected and giving as many options to modify the output binary as possible.</p>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_vendors">Vendors</h2>
+<h2 id="_the_vasm_compiler_pipeline">The VASM Compiler Pipeline</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>VASM, in short, provides generation through <strong>vendors</strong>, vendors allow for platform-specific headers by essentially acting as a middleware runtime between the original top-level source code and low level virtual machine instruction set. Multiple architectures with their own respective sizes can be emitted, with little to no truncating needed. VASM also has support for managing data <em>sizes</em> to prevent issues with numbers being too big, and catching mistakes at compile-time.</p>
+<p>VASM has a complex pipeline for compiling a program, which has the following steps:</p>
 </div>
-<div class="paragraph">
-<p><strong>VASM</strong> stands for <strong>Volt ASseMbler</strong>, taking after the late <a href="https://github.com/thekaigonzalez/VOLT">VOLT</a> compiler for NexFUSE and OpenLUD. VASM is an attempt to modernize development with low-level one dimensional bytecode formats.</p>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_read_more">Read More</h2>
-<div class="sectionbody">
 <div class="sect2">
-<h3 id="_binary_formats">Binary Formats</h3>
-<div class="ulist">
-<ul>
-<li>
-<p><a href="./formats/nexfuse.html">NexFUSE</a></p>
-</li>
-<li>
-<p><a href="./formats/mercury.html">MercuryPIC</a></p>
-</li>
-<li>
-<p><a href="./formats/openlud.html">OpenLUD</a></p>
-</li>
-<li>
-<p><a href="./formats/siax.html">SiAX</a></p>
-</li>
-</ul>
+<h3 id="_the_lexer_and_parser">The Lexer and Parser</h3>
+<div class="paragraph">
+<p>The lexer turns the input source code into a token stream, which is then read by the parser to create an abstract syntax tree. (AST) This is also around the stage where vendor implementations are able to be set up. "Vendors" essentially manage a majority of the host formats environment, and ensure that when the code is generated, its purpose stays the same, no matter what format is chosen.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_compiler_documentation">Compiler Documentation</h3>
-<div class="ulist">
-<ul>
-<li>
-<p><a href="./compiler/intro.html">Compiler Intro</a></p>
-</li>
-<li>
-<p><a href="./compiler/flags.html">Compiler Flags</a></p>
-</li>
-</ul>
+<h3 id="_stylist">Stylist</h3>
+<div class="paragraph">
+<p>In between the lexing and parsing stages, there is another facility run called stylist. Stylist essentially reports on the style of the source file by lexically analyzing it as it would if it were turning it into a binary. However, at this stage more critical things are looked at, such as non-compliant styles, good practices, and checks for undefined behavior (UB).</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_the_macro_system">The Macro System</h3>
+<div class="paragraph">
+<p>Prior to the code generation stage, the macro system is run. The macro system will traverse the syntax tree for any macro calls <strong>only</strong> and run each one, each one being aware of every compiler option. Macros are run before compiling to manage the options and the settings for the file that’s being compiled.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-asm" data-lang="asm">[compat nexfuse] ; specifies nexfuse compatibility ONLY</code></pre>
 </div>
 </div>
 </div>
+<div class="sect2">
+<h3 id="_code_generation">Code Generation</h3>
+<div class="paragraph">
+<p>Once the vendors get set up and everything‘s ready to go, the code can then be generated based on the instructions that the vendors provide. This resulting code is then put into a procedure map, which is used by the linker to generate an output binary.</p>
+</div>
+<div class="paragraph">
+<p>This step is <strong>Code generation</strong>, and is one of the most important steps as it provides the structure and template for a usable binary.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_linking">Linking</h3>
+<div class="paragraph">
+<p>Linking is when the compiler takes the procedure map and transforms it into something that the bytecode interpreters can understand. This includes headers, procedures that aren’t folding<sup class="footnote">[<a id="_footnoteref_1" class="footnote" href="#_footnotedef_1" title="View footnote.">1</a>]</sup>, and instruction sequences. At this stage, the size of the output file is chosen, which can be 32-bit and 64-bit, depending on the designated output format.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="footnotes">
+<hr>
+<div class="footnote" id="_footnotedef_1">
+<a href="#_footnoteref_1">1</a>. Folding is the act of expanding a procedure into the original code, getting rid of its definition and just leaving its root actions. The code will remain the same, but the definition will be eliminated.
 </div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2024-10-19 11:42:57 -0400
+Last updated 2024-10-19 11:48:46 -0400
 </div>
 </div>
 </body>

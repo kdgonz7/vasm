@@ -1,0 +1,37 @@
+= VASM
+
+== Introduction
+
+The VASM compiler is a compiler for an assembly-like language that is designed to be efficient, small, and compatible with multiple binary formats. VASM can be used to generate optimized binaries that run on different platforms with little to no changes, depending on the standard. However, this deficit is not guaranteed as different formats have additional regulations and specifications regarding the instruction set.
+
+VASM does its best to mitigate these effects by allowing for different standards to be selected and giving as many options to modify the output binary as possible.
+
+== The VASM Compiler Pipeline
+
+VASM has a complex pipeline for compiling a program, which has the following steps: 
+
+=== The Lexer and Parser
+
+The lexer turns the input source code into a token stream, which is then read by the parser to create an abstract syntax tree. (AST) This is also around the stage where vendor implementations are able to be set up. "Vendors" essentially manage a majority of the host formats environment, and ensure that when the code is generated, its purpose stays the same, no matter what format is chosen.
+
+=== Stylist
+
+In between the lexing and parsing stages, there is another facility run called stylist. Stylist essentially reports on the style of the source file by lexically analyzing it as it would if it were turning it into a binary. However, at this stage more critical things are looked at, such as non-compliant styles, good practices, and checks for undefined behavior (UB).
+
+=== The Macro System
+
+Prior to the code generation stage, the macro system is run. The macro system will traverse the syntax tree for any macro calls *only* and run each one, each one being aware of every compiler option. Macros are run before compiling to manage the options and the settings for the file that’s being compiled.
+
+[source,asm]
+[compat nexfuse] ; specifies nexfuse compatibility ONLY
+
+=== Code Generation
+
+Once the vendors get set up and everything‘s ready to go, the code can then be generated based on the instructions that the vendors provide. This resulting code is then put into a procedure map, which is used by the linker to generate an output binary.
+
+This step is *Code generation*, and is one of the most important steps as it provides the structure and template for a usable binary.
+
+
+=== Linking
+
+Linking is when the compiler takes the procedure map and transforms it into something that the bytecode interpreters can understand. This includes headers, procedures that aren’t foldingfootnote:[Folding is the act of expanding a procedure into the original code, getting rid of its definition and just leaving its root actions. The code will remain the same, but the definition will be eliminated.], and instruction sequences. At this stage, the size of the output file is chosen, which can be 32-bit and 64-bit, depending on the designated output format. 

@@ -21,4 +21,5 @@ VASM, in short, provides generation through *vendors*, vendors allow for platfor
 
 === Compiler Documentation
 
+* link:./compiler/intro.html[Compiler Intro]
 * link:./compiler/flags.html[Compiler Flags]
