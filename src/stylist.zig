@@ -82,7 +82,7 @@ pub fn analyze(parent_allocator: std.mem.Allocator, source_text: []const u8) !Su
                             .suggestion_type = .good_practice,
                         },
                     );
-                } else if (source_text[i + 1] == ' ') {
+                } else if (source_text[i + 1] != ' ') {
                     try returning_list.append(
                         Suggestion{
                             .suggestion_location = SuggestionLocation{
@@ -91,7 +91,7 @@ pub fn analyze(parent_allocator: std.mem.Allocator, source_text: []const u8) !Su
                                 .problematic_area_end = char + 1,
                             },
 
-                            .suggestion_message = "trailing space",
+                            .suggestion_message = "add a space after the comma",
                             .suggestion_type = .non_compliant,
                         },
                     );
@@ -169,9 +169,8 @@ test analyze {
     const suggestions_for = try analyze(std.testing.allocator, "a: mov R1, 5");
     defer suggestions_for.deinit();
 
-    try std.testing.expectEqual(2, suggestions_for.items.len);
-    try std.testing.expectEqual(SuggestionType.non_compliant, suggestions_for.items[0].suggestion_type); // space after parameter
-    try std.testing.expectEqual(SuggestionType.good_practice, suggestions_for.items[1].suggestion_type); // missing newline
+    try std.testing.expectEqual(1, suggestions_for.items.len);
+    try std.testing.expectEqual(SuggestionType.good_practice, suggestions_for.items[0].suggestion_type); // missing newline
 
     const more_suggestions = try analyze(std.testing.allocator, "a: mov R1");
     defer more_suggestions.deinit();
@@ -181,13 +180,10 @@ test analyze {
 }
 
 test "analyze lines" {
-    const suggestions_for = try analyze(std.testing.allocator, "a: mov R1, 5");
+    const suggestions_for = try analyze(std.testing.allocator, "a: mov R1, 5\n");
     defer suggestions_for.deinit();
 
-    try std.testing.expectEqual(2, suggestions_for.items.len);
-    try std.testing.expectEqual(SuggestionType.non_compliant, suggestions_for.items[0].suggestion_type); // space after parameter
-    try std.testing.expectEqual(SuggestionType.good_practice, suggestions_for.items[1].suggestion_type); // missing newline
-    try std.testing.expectEqual(1, suggestions_for.items[0].suggestion_location.line_number); // missing newline
+    try std.testing.expectEqual(0, suggestions_for.items.len);
 
     const more_suggestions = try analyze(std.testing.allocator, "a: mov R1");
     defer more_suggestions.deinit();
