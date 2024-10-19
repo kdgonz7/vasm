@@ -58,6 +58,7 @@ pub const ctx = .{
     .vasm_header = false,
     .use_end_byte = true,
     .end_byte = 12,
+    .proc_end_byte = false,
 };
 
 /// *"ECHO will print out a byte as a character"*
