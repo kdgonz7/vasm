@@ -102,6 +102,7 @@ pub fn runtime(vend: *codegen.Vendor(u8)) !void {
     try vend.createAndImplementInstruction(u8, "cmp", &cmpIns);
     try vend.createAndImplementInstruction(u8, "inc", &incIns);
     try vend.createAndImplementInstruction(u8, "rep", &repIns);
+    try vend.createAndImplementInstruction(u8, "jmp", &gosubIns);
 }
 
 //TODO: add type checks for all of these instructions
@@ -390,8 +391,25 @@ pub fn repIns(
     try gen.append(53);
     try gen.append(@bitCast(proc_name.identifier_string[0]));
     try gen.append(@intCast(times.getNumber()));
+
+    return .ok;
 }
-// pub fn repIns(generator: anytype, vendor: anytype, args: anytype) !void {}
+
+pub fn gosubIns(
+    gen: *codegen.Generator(u8),
+    vend: *codegen.Vendor(u8),
+    args: []parser.Value,
+) Return {
+    _ = vend;
+
+    const label = args[0].toIdentifier();
+
+    // jmp to label
+    try gen.append(15);
+    try gen.append(@bitCast(label.identifier_string[0]));
+
+    return .ok;
+}
 
 // wellness checks
 // should compile in this exact form as
@@ -637,6 +655,16 @@ test {
         u8,
         "_start:\n   inc R1\n",
         &[_]u8{ 52, 1, 0, 22 },
+        ctx_no_folding,
+        runtime,
+    );
+}
+
+test {
+    try expectBin(
+        u8,
+        "_start:\n   jmp a\n",
+        &[_]u8{ 15, 97, 0, 22 },
         ctx_no_folding,
         runtime,
     );
