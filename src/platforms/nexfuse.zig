@@ -279,7 +279,6 @@ pub fn nopIns(
     return .ok;
 }
 
-// TODO: finish
 pub fn larIns(
     gen: *codegen.Generator(u8),
     vend: *codegen.Vendor(u8),
