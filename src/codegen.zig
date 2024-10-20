@@ -17,17 +17,21 @@
 const std = @import("std");
 const peephole = @import("peephole.zig");
 const instruction_result = @import("instruction_result.zig");
+const lex = @import("lexer.zig");
+const parse = @import("parser.zig");
+const token_stream = @import("token_stream.zig");
 
-const Lexer = @import("lexer.zig").Lexer;
-const LexerArea = @import("lexer.zig").LexerArea;
+const Lexer = lex.Lexer;
+const LexerArea = lex.LexerArea;
+const Span = token_stream.Span;
 
-const Parser = @import("parser.zig").Parser;
+const Parser = parse.Parser;
 
-const Node = @import("parser.zig").Node;
-const NodeTag = @import("parser.zig").NodeTag;
-const Value = @import("parser.zig").Value;
-const Root = @import("parser.zig").Root;
-const Procedure = @import("parser.zig").Procedure;
+const Node = parse.Node;
+const NodeTag = parse.NodeTag;
+const Value = parse.Value;
+const Root = parse.Root;
+const Procedure = parse.Procedure;
 
 const InstructionResult = instruction_result.InstructionResult;
 
@@ -131,6 +135,7 @@ pub fn Vendor(comptime format_type: type) type {
 
         erroneous_result: InstructionResult = undefined,
         erroneous_token: Value = undefined,
+        erroneous_span: Span = undefined,
 
         pub fn init(parent_allocator: std.mem.Allocator) Self {
             return Self{
@@ -220,12 +225,14 @@ pub fn Vendor(comptime format_type: type) type {
 
                                 switch (res) {
                                     .ok => {},
+
                                     else => {
                                         self.erroneous_result = res;
                                         return error.InstructionError;
                                     },
                                 }
                             } else {
+                                self.erroneous_span = ins.name.span;
                                 return error.InstructionDoesntExist;
                             }
 
