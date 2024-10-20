@@ -240,8 +240,6 @@ pub fn runtime(vend: *codegen.Vendor(u8)) !void {
     );
 }
 
-//TODO: add type checks for all of these instructions
-
 /// Prints a byte to STDOUT.
 ///
 /// `echo c: char -> void`
