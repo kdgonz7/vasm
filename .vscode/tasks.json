@@ -22,7 +22,7 @@
         {
             "label": "Build",
             "type": "shell",
-            "command": "python x.py build",
+            "command": "python x.py build --optimize=Debug",
             "problemMatcher": [
                 "$zig"
             ],
