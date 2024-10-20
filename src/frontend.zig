@@ -214,7 +214,9 @@ pub fn runCompilerFrontend() !void {
 
     lex.startLexingInputText() catch |err| report.printError(&lex, file, err);
 
-    const ast = pars.createRootNode() catch |err| report.astError(err, lex);
+    const ast = pars.createRootNode() catch |err| report.astError(err, .{
+        .file_name = file,
+    }, &lex, &pars);
 
     try generateMethod(selected_vm, .{
         .parent_allocator = allocator,
