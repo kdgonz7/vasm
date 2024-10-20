@@ -56,10 +56,12 @@ pub const CodegenError = error{
 
 pub const TypeTag = enum {
     single_type,
+    any,
 };
 
 pub const Type = union(TypeTag) {
     single_type: ValueTag,
+    any: u0,
 
     pub fn init(t: ValueTag) Type {
         return Type{
@@ -67,17 +69,38 @@ pub const Type = union(TypeTag) {
         };
     }
 
+    pub fn initAny() Type {
+        return Type{
+            .any = 0,
+        };
+    }
+
     pub fn getParamType(self: *const Type) TypeTag {
         return switch (self.*) {
             .single_type => TypeTag.single_type,
+            .any => TypeTag.any,
         };
     }
 
     pub fn asSingleType(self: *const Type) ValueTag {
         switch (self.*) {
             .single_type => |t| return t,
+            else => unreachable,
         }
     }
+
+    pub fn isAny(self: *const Type) bool {
+        return switch (self.*) {
+            .any => true,
+            else => false,
+        };
+    }
+};
+
+pub const TooLittleInfoEr = struct {
+    span: Span,
+    annotation: Annotation,
+    name: []const u8,
 };
 
 /// Manages the result of a code generation.
@@ -90,7 +113,7 @@ pub const Result = union(ResultTag) {
     bad_result: Span,
     instruction_doesnt_exist: Span,
     instruction_coughed_up_bad_result: InstructionResult,
-    too_little_params: Span,
+    too_little_params: TooLittleInfoEr,
 
     pub const ResultTag = enum {
         ok,
@@ -358,15 +381,22 @@ pub fn Vendor(comptime format_type: type) type {
                                     // annotation list and check it against the param list
                                     // if its a multiple type, check for either type.
 
-                                    if (ins.parameters.items.len != annotation.type_list.items.len) {
+                                    if (ins.parameters.items.len < annotation.type_list.items.len) {
                                         return Result{
-                                            .too_little_params = ins.name.span,
+                                            .too_little_params = TooLittleInfoEr{
+                                                .annotation = annotation,
+                                                .name = ins.name.identifier_string,
+                                                .span = ins.name.span,
+                                            },
                                         };
                                     }
 
                                     for (0..ins.parameters.items.len) |i| {
                                         const it = ins.parameters.items[i];
                                         const cur_annot = annotation.type_list.items[i];
+
+                                        // if any type can be a parameter, skip
+                                        if (cur_annot.getParamType() == .any) continue;
 
                                         if (cur_annot.getParamType() == .single_type) {
                                             if (it.getType() != cur_annot.asSingleType()) {
