@@ -185,7 +185,7 @@ test "creating and using a linker to create a usable binary" {
     const root = try createNodeFrom(allocatir, "_start: move\n");
 
     try vend1.implementInstruction("move", &mov_ins);
-    try vend1.generateBinary(root);
+    _ = try vend1.generateBinary(root);
 
     try link.linkUnOptimizedWithContext(.{
         .start_definition = "_start",
@@ -215,7 +215,7 @@ test "creating and using a linker to create a usable binary w/ procedures using 
     const root = try createNodeFrom(allocatir, "a: move\n");
 
     try vend1.implementInstruction("move", &mov_ins);
-    try vend1.generateBinary(root);
+    _ = try vend1.generateBinary(root);
 
     try link.linkUnOptimizedWithContext(.{
         .start_definition = "_start",
@@ -248,7 +248,7 @@ test "creating and using a linker to create a usable binary w/ procedures using 
     const root = try createNodeFrom(allocatir, "a: move\n");
 
     try vend1.implementInstruction("move", &mov_ins);
-    try vend1.generateBinary(root);
+    _ = try vend1.generateBinary(root);
 
     try link.linkUnOptimizedWithContext(.{
         .start_definition = "_start",
@@ -283,7 +283,7 @@ test "creating and using a linker to create a usable binary and writing it to a 
     const root = try createNodeFrom(allocatir, "a: move\n");
 
     try vend1.implementInstruction("move", &mov_ins);
-    try vend1.generateBinary(root);
+    _ = try vend1.generateBinary(root);
 
     try link.linkUnOptimizedWithContext(.{
         .start_definition = "_start",
@@ -320,7 +320,7 @@ test "creating and using a linker using linkOptimized" {
     const root = try createNodeFrom(allocatir, "a: move\n");
 
     try vend1.implementInstruction("move", &mov_ins);
-    try vend1.generateBinary(root);
+    _ = try vend1.generateBinary(root);
 
     try link.linkOptimizedWithContext(.{
         .start_definition = "_start",

@@ -19,7 +19,7 @@ pub fn expectBin(comptime T: type, text: []const u8, bin: []const T, ctx: anytyp
 
     const root = try ast(allocator, text);
 
-    try vend1.generateBinary(root);
+    _ = try vend1.generateBinary(root);
     try link.linkUnOptimizedWithContext(ctx, vend1.procedure_map);
 
     if (link.binary.items.len == 0 and bin.len == 0) return;
