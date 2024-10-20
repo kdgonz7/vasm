@@ -37,7 +37,7 @@ test "populate vendor using openlud" {
 
     try std.testing.expectEqual(2, root.asRoot().getChildrenAmount());
 
-    try vend1.generateBinary(root);
+    _ = try vend1.generateBinary(root);
     try link.linkUnOptimizedWithContext(openlud.ctx, vend1.procedure_map);
 
     const expected_bin: [4]i8 = .{ 40, 65, 0, 12 }; // ECHO 65 NUL prints 'A'
@@ -62,7 +62,7 @@ test "populate vendor using openlud program 2" {
 
     try std.testing.expectEqual(1, root.asRoot().getChildrenAmount());
 
-    try vend1.generateBinary(root);
+    _ = try vend1.generateBinary(root);
 
     try link.linkUnOptimizedWithContext(openlud.ctx, vend1.procedure_map);
 
@@ -89,7 +89,7 @@ test "populate vendor using openlud program 3" {
 
     try std.testing.expectEqual(1, root.asRoot().getChildrenAmount());
 
-    try vend1.generateBinary(root);
+    _ = try vend1.generateBinary(root);
 
     try link.linkUnOptimizedWithContext(openlud.ctx, vend1.procedure_map);
 
@@ -116,7 +116,7 @@ test "populate vendor using openlud program 4" {
 
     try std.testing.expectEqual(1, root.asRoot().getChildrenAmount());
 
-    try vend1.generateBinary(root);
+    _ = try vend1.generateBinary(root);
 
     try link.linkUnOptimizedWithContext(openlud.ctx, vend1.procedure_map);
 
