@@ -3,6 +3,7 @@ const tty = std.io.tty;
 
 const lexer = @import("lexer.zig");
 const linker = @import("linker.zig");
+const parser = @import("parser.zig");
 const compiler_status = @import("compiler_status.zig");
 
 /// Manages standard error and standard output files. Prints in color cross platform.
@@ -224,10 +225,55 @@ pub const Reporter = struct {
         std.process.exit(1);
     }
 
-    pub fn astError(self: *Reporter, err: anytype, lex: lexer.Lexer) noreturn {
-        _ = lex;
+    pub fn astError(self: *Reporter, err: anytype, ctx: anytype, lex: *lexer.Lexer, pars: *parser.Parser) noreturn {
+        const last = pars.token_stream_internal.internal_list.items[pars.token_stream_internal.stream_pos - 1];
 
-        self.errorMessage("ast error {any}", .{err});
+        switch (err) {
+            error.RangeExpectsSeparator => {
+                lex.area.char_pos = last.number.span.char_begin;
+                lex.area.line_number = last.number.span.line_number;
+
+                self.errorMessage("{s}:{d}:{d}: range expects separator", .{
+                    ctx.file_name,
+                    lex.area.line_number,
+                    lex.area.char_pos,
+                });
+                self.getSourceLocation(lex, .suggestion);
+            },
+
+            error.RangeExpectsEnd => {
+                lex.area.char_pos = last.number.span.char_begin;
+                lex.area.line_number = last.number.span.line_number;
+
+                self.errorMessage("{s}:{d}:{d}: range expects '{c}'", .{
+                    ctx.file_name,
+                    lex.area.line_number,
+                    lex.area.char_pos,
+                    '}',
+                });
+                self.getSourceLocation(lex, .suggestion);
+            },
+
+            error.InvalidTokenValue => {
+                lex.area.char_pos = last.getSpan().char_begin;
+                lex.area.line_number = last.getSpan().line_number;
+
+                self.errorMessage("{s}:{d}:{d}: range expects '{c}'", .{
+                    ctx.file_name,
+                    lex.area.line_number,
+                    lex.area.char_pos,
+                    '}',
+                });
+                self.getSourceLocation(lex, .suggestion);
+            },
+
+            else => {
+                self.errorMessage("other ast error: {s}", .{
+                    @errorName(err),
+                });
+                self.getSourceLocation(lex, .erroneous);
+            },
+        }
         std.process.exit(1);
     }
 
