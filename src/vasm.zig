@@ -11,6 +11,7 @@ pub const errors = @import("errors.zig");
 pub const nexfuse = @import("platforms/nexfuse.zig");
 pub const stylist = @import("stylist.zig");
 pub const hybrid = @import("hybrid.zig");
+pub const pp = @import("preprocessor.zig");
 
 test {
     std.testing.refAllDecls(@This());
