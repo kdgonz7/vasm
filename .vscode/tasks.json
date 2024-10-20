@@ -6,7 +6,7 @@
         {
             "label": "Tests",
             "type": "shell",
-            "command": "python x.py tests",
+            "command": "python x.py tests-summary",
             "problemMatcher": [
                 "$zig"
             ],
