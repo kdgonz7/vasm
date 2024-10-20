@@ -811,6 +811,30 @@ test "creating and using a parser for a macro" {
     try std.testing.expectEqual(3, macro_call.macro.parameters.items[2].number.getNumber());
 }
 
+test "creating and using a parser for a macro 2" {
+    var arena = createTestArena();
+    const allocator = arena.allocator();
+    defer arena.deinit();
+
+    var lexer = Lexer.init(allocator);
+
+    lexer.setInputText("[compat nexfuse]");
+    try lexer.startLexingInputText();
+
+    var parser = Parser.init(allocator, &lexer.stream);
+    defer parser.deinit();
+
+    var root = try parser.createRootNode();
+
+    try std.testing.expectEqual(1, root.asRoot().children.items.len);
+
+    const macro_call = root.asRoot().children.items[0];
+
+    try std.testing.expectEqual(1, macro_call.macro.parameters.items.len);
+    try std.testing.expectEqualStrings("compat", macro_call.macro.name.identifier_string);
+    try std.testing.expectEqualStrings("nexfuse", macro_call.macro.parameters.items[0].identifier.identifier_string);
+}
+
 test "creating and using a parser for multiple macros" {
     var arena = createTestArena();
     const allocator = arena.allocator();
