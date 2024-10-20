@@ -86,6 +86,11 @@ pub const ValueTag = enum {
     /// The LR Assembly "Literal" type.
     /// A single character in the ASCII set.
     literal,
+
+    /// The LR Assembly niladic type. Represents nothing.
+    ///
+    /// Not NULL, still a custom type therefore is type safe.
+    nil,
 };
 
 /// A value. Represents an LR assembly value. [compliant]
@@ -97,6 +102,7 @@ pub const Value = union(ValueTag) {
     range: Range,
     register: Register,
     literal: Literal,
+    nil: u0,
 
     pub fn toRegister(self: *const Value) Register {
         return self.register;
@@ -125,7 +131,12 @@ pub const Value = union(ValueTag) {
             ValueTag.range => ValueTag.range,
             ValueTag.register => ValueTag.register,
             ValueTag.literal => ValueTag.literal,
+            ValueTag.nil => ValueTag.nil,
         };
+    }
+
+    pub fn isNil(self: *const Value) bool {
+        return self.* == .nil;
     }
 };
 
@@ -563,6 +574,12 @@ pub const Parser = struct {
             .identifier => {
                 const ident = token.identifier;
 
+                if (std.ascii.eqlIgnoreCase(ident.identifier_string, "nil")) {
+                    return Value{
+                        .nil = 0,
+                    };
+                }
+
                 if (ident.identifier_string[0] == 'R') {
                     if (ident.identifier_string.len == 1) {
                         return error.RegisterMissingNumber;
@@ -988,6 +1005,58 @@ test "ranges with other parameters" {
     try std.testing.expectEqual(5, start.children.items[0].instruction_call.parameters.items[0].range.starting_position);
     try std.testing.expectEqual(10, start.children.items[0].instruction_call.parameters.items[0].range.ending_position);
     try std.testing.expectEqual(5, start.children.items[0].instruction_call.parameters.items[1].number.getNumber());
+}
+
+test "nil" {
+    var arena = createTestArena();
+    const allocator = arena.allocator();
+    defer arena.deinit();
+
+    var lexer = Lexer.init(allocator);
+
+    lexer.setInputText("start:\n   halt nil");
+    try lexer.startLexingInputText();
+
+    var parser = Parser.init(allocator, &lexer.stream);
+    defer parser.deinit();
+
+    var root = try parser.createRootNode();
+
+    try std.testing.expectEqual(1, root.asRoot().children.items.len);
+
+    const start = root.asRoot().children.items[0].procedure;
+
+    try std.testing.expectEqual(1, start.children.items.len);
+    try std.testing.expectEqual(1, start.children.items[0].instruction_call.parameters.items.len);
+
+    try std.testing.expectEqualStrings("halt", start.children.items[0].instruction_call.name.identifier_string);
+    try std.testing.expectEqual(true, start.children.items[0].instruction_call.parameters.items[0].isNil());
+}
+
+test "NIL" {
+    var arena = createTestArena();
+    const allocator = arena.allocator();
+    defer arena.deinit();
+
+    var lexer = Lexer.init(allocator);
+
+    lexer.setInputText("start:\n   halt NIL");
+    try lexer.startLexingInputText();
+
+    var parser = Parser.init(allocator, &lexer.stream);
+    defer parser.deinit();
+
+    var root = try parser.createRootNode();
+
+    try std.testing.expectEqual(1, root.asRoot().children.items.len);
+
+    const start = root.asRoot().children.items[0].procedure;
+
+    try std.testing.expectEqual(1, start.children.items.len);
+    try std.testing.expectEqual(1, start.children.items[0].instruction_call.parameters.items.len);
+
+    try std.testing.expectEqualStrings("halt", start.children.items[0].instruction_call.name.identifier_string);
+    try std.testing.expectEqual(true, start.children.items[0].instruction_call.parameters.items[0].isNil());
 }
 
 test "error test 1" {
