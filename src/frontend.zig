@@ -12,8 +12,10 @@ const linker = @import("linker.zig");
 const compiler = @import("compiler_main.zig");
 const compiler_output = @import("compiler_output.zig");
 const compiler_vendors = @import("compiler_vendors.zig");
+const compiler_pp = @import("compiler_pp.zig");
 const stylist = @import("stylist.zig");
 const diagnostic = @import("stylist_diagnostic.zig");
+const preprocessor = @import("preprocessor.zig");
 
 const stringCompare = std.ascii.eqlIgnoreCase;
 
@@ -171,7 +173,7 @@ pub fn runCompilerFrontend() !void {
     const allocator = arena.allocator();
 
     // the command-line options.
-    const opts = getOptions(allocator, &report);
+    var opts = getOptions(allocator, &report);
 
     // if there's no files, then exit
     if (opts.files.items.len == 0) {
@@ -201,6 +203,18 @@ pub fn runCompilerFrontend() !void {
         });
     }
 
+    lex.startLexingInputText() catch |err| report.printError(&lex, file, err);
+
+    var ast = pars.createRootNode() catch |err| report.astError(err, .{
+        .file_name = file,
+    }, &lex, &pars);
+
+    const res = compiler_pp.preprocessWithDefaultRuntime(allocator, &opts, &ast) catch |err| report.printError(&lex, file, err);
+
+    if (res != .ok) {
+        report.printPreprocessError(res);
+    }
+
     const selected_vm = vendorStringToVendor(opts.format.?);
 
     if (selected_vm == .unknown) {
@@ -211,12 +225,6 @@ pub fn runCompilerFrontend() !void {
 
     lex.rules.max_number_size = checkNumberSizeFor(selected_vm);
     lex.rules.check_for_big_numbers = !opts.allow_big_numbers;
-
-    lex.startLexingInputText() catch |err| report.printError(&lex, file, err);
-
-    const ast = pars.createRootNode() catch |err| report.astError(err, .{
-        .file_name = file,
-    }, &lex, &pars);
 
     try generateMethod(selected_vm, .{
         .parent_allocator = allocator,
