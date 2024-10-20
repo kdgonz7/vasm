@@ -169,6 +169,10 @@ pub fn Vendor(comptime format_type: type) type {
                             .procedure => |*proc| {
                                 try self.generateBinaryProcedure(proc);
                             },
+
+                            // ignore macros, that's for the macro stage
+                            .macro => |_| {},
+
                             else => {
                                 return error.InvalidExpressionRoot;
                             },
