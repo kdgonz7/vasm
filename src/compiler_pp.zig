@@ -18,6 +18,7 @@ pub fn preprocessWithDefaultRuntime(allocator: std.mem.Allocator, options: *comp
 
     try pp.addDirective("compat", &compiler_rt.compatDirective);
     try pp.addDirective("endian", &compiler_rt.endianDirective);
+    try pp.addDirective("compile-if", &compiler_rt.compile_if);
 
     return try pp.handleAstDirectives(ast_root);
 }
