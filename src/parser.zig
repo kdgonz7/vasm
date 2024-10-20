@@ -134,6 +134,7 @@ pub const Register = struct {
     register_number: usize,
     span: token_stream_z.Span = token_stream_z.Span{
         .begin = 0,
+        .char_begin = 0,
         .end = 0,
         .line_number = 0,
     },
@@ -632,6 +633,10 @@ pub const Parser = struct {
 
         const sep = try self.getCurrentToken();
 
+        if (self.streamIsAtEnd()) {
+            return error.RangeExpectsSeparator;
+        }
+
         if (sep.getType() != .operator or sep.operator.kind != OpKind.colon) {
             return error.RangeExpectsSeparator;
         }
@@ -639,6 +644,10 @@ pub const Parser = struct {
         self.incrementCurrentPosition();
 
         const end_value = try self.createValueFromToken(try self.getCurrentToken());
+
+        if (self.streamIsAtEnd()) {
+            return error.RangeExpectsEnd;
+        }
 
         if (end_value.getType() != .number) {
             return error.RangeExpectsNumber;
