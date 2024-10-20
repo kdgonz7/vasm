@@ -66,6 +66,7 @@ pub const ParseError = error{
     IndexOutOfRangeForReference,
     RangeExpectsEnd,
     RangeExpectsStart,
+    RangeStartsAfterEnd,
 };
 
 pub const ValueTag = enum {
@@ -681,6 +682,13 @@ pub const Parser = struct {
             if (close.operator.kind != OpKind.curly_close) {
                 return error.RangeExpectsEnd;
             }
+        }
+
+        if (start_value.number.getNumber() > end_value.number.getNumber()) {
+            // go back to the number
+            self.token_stream_internal.stream_pos -= 2;
+
+            return error.RangeStartsAfterEnd;
         }
 
         return Value{
