@@ -290,6 +290,24 @@ pub const Lexer = struct {
                 });
             },
 
+            '{' => {
+                try self.stream.addOne(Token{
+                    .operator = Operator{
+                        .kind = .curly_open,
+                        .position = self.getCurrentPosition(),
+                    },
+                });
+            },
+
+            '}' => {
+                try self.stream.addOne(Token{
+                    .operator = Operator{
+                        .kind = .curly_close,
+                        .position = self.getCurrentPosition(),
+                    },
+                });
+            },
+
             else => {
                 if (!std.ascii.isWhitespace(character)) {
                     return error.UnexpectedToken;
