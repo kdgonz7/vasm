@@ -24,7 +24,7 @@ pub const TokenStreamError = error{
 pub const Span = struct {
     begin: usize,
     end: usize,
-    char_begin: usize = 1,
+    char_begin: usize,
     line_number: usize,
 };
 
@@ -33,6 +33,7 @@ pub const Identifier = struct {
     identifier_string: []const u8,
     span: Span = Span{
         .begin = 0,
+        .char_begin = 0,
         .end = 0,
         .line_number = 0,
     },
@@ -52,6 +53,7 @@ pub const Number = struct {
     number: i64,
     span: Span = Span{
         .begin = 0,
+        .char_begin = 0,
         .end = 0,
         .line_number = 0,
     },
@@ -89,12 +91,19 @@ pub const Operator = struct {
     kind: OperatorKind,
     operator_string: []const u8 = "",
     position: usize,
+    span: Span = Span{
+        .begin = 0,
+        .char_begin = 0,
+        .end = 0,
+        .line_number = 1,
+    },
 };
 
 pub const Literal = struct {
     character: []const u8,
     span: Span = Span{
         .begin = 0,
+        .char_begin = 0,
         .end = 0,
         .line_number = 0,
     },
@@ -152,6 +161,21 @@ pub const Token = union(TokenTag) {
             .operator => TokenTag.operator,
             .literal => TokenTag.literal,
             else => TokenTag.unknown,
+        };
+    }
+
+    pub fn getSpan(self: *const Token) Span {
+        return switch (self.*) {
+            .identifier => self.identifier.span,
+            .number => self.number.span,
+            .operator => self.operator.span,
+            .literal => self.literal.span,
+            else => Span{
+                .begin = 0,
+                .char_begin = 0,
+                .end = 0,
+                .line_number = 1,
+            },
         };
     }
 };
