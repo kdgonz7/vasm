@@ -152,3 +152,28 @@ test {
 
     try std.testing.expectEqual(res.getTag(), .ok);
 }
+test {
+    var arena = std.heap.ArenaAllocator.init(std.testing.allocator);
+    const allocator = arena.allocator();
+    defer arena.deinit();
+
+    var lex = Lexer.init(allocator);
+
+    lex.setInputText("[compat nexfuse]\n[compat nexfuse]");
+    try lex.startLexingInputText();
+
+    var pars = Parser.init(allocator, &lex.stream);
+    defer pars.deinit();
+
+    var root = try pars.createRootNode();
+    var opts1 = Options{
+        .files = undefined,
+    };
+    var pp = Preprocessor.init(allocator, &opts1);
+    defer pp.deinit();
+
+    try pp.addDirective("compat", &testPrepValue);
+    const res = try pp.handleAstDirectives(&root);
+
+    try std.testing.expectEqual(res.getTag(), .ok);
+}
