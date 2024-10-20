@@ -70,7 +70,14 @@ fn generateMethod(format: anytype, ctx: anytype) !void {
             try drivers.openlud.vendor(&gen);
 
             // generate the procedure map
-            gen.generateBinary(ctx.tree) catch |err| ctx.report.genError(err, gen, ctx);
+            const res = try gen.generateBinary(ctx.tree);
+            switch (res) {
+                .ok => {},
+                else => |_| {
+                    ctx.report.genError(res, &gen, ctx);
+                    return;
+                },
+            }
 
             // generate the optimized binary
             link.linkOptimizedWithContext(drivers.openlud.ctx, &gen, gen.procedure_map) catch |err| ctx.report.linkerError(err, link, ctx);
@@ -83,7 +90,14 @@ fn generateMethod(format: anytype, ctx: anytype) !void {
 
             try drivers.nexfuse.runtime(&gen);
 
-            gen.generateBinary(ctx.tree) catch |err| ctx.report.genError(err, gen, ctx);
+            const res = try gen.generateBinary(ctx.tree);
+            switch (res) {
+                .ok => {},
+                else => |_| {
+                    ctx.report.genError(res, &gen, ctx);
+                    return;
+                },
+            }
 
             // TODO: nexfuse binaries should be optimized, however
             // TODO: some instructions are lost when optimizations occur.
