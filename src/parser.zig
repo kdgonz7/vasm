@@ -136,6 +136,19 @@ pub const Value = union(ValueTag) {
         };
     }
 
+    pub fn getSpan(self: *const Value) token_stream_z.Span {
+        return switch (self.*) {
+            ValueTag.identifier => self.identifier.span,
+            ValueTag.number => self.number.span,
+            ValueTag.range => self.range.span,
+            ValueTag.register => self.register.span,
+            ValueTag.literal => self.literal.span,
+            ValueTag.nil => {
+                @panic("nil does not have a span");
+            },
+        };
+    }
+
     pub fn isNil(self: *const Value) bool {
         return self.* == .nil;
     }
@@ -165,6 +178,12 @@ pub const Register = struct {
 pub const Range = struct {
     starting_position: usize,
     ending_position: usize,
+    span: token_stream_z.Span = token_stream_z.Span{
+        .begin = 0,
+        .char_begin = 0,
+        .end = 0,
+        .line_number = 0,
+    },
 };
 
 /// Possible types that a `Node` type can be.
@@ -695,6 +714,7 @@ pub const Parser = struct {
             .range = Range{
                 .starting_position = @intCast(start_value.number.getNumber()),
                 .ending_position = @intCast(end_value.number.getNumber()),
+                .span = start_value.number.span,
             },
         };
     }
