@@ -118,6 +118,19 @@ pub const Reporter = struct {
         std.process.exit(1);
     }
 
+    pub fn printPreprocessError(self: *Reporter, err_result: anytype) noreturn {
+        switch (err_result) {
+            .nonexistent_directive => {
+                self.errorMessage("unknown directive `{s}`", .{err_result.nonexistent_directive});
+            },
+            else => {
+                self.errorMessage("preprocessor error: {s}", .{@tagName(err_result)});
+            },
+        }
+
+        std.process.exit(1);
+    }
+
     pub fn getCustomarySourceLocationUsingLexer(self: *Reporter, existing_lexer: anytype, begin: anytype, end: anytype, line_number: anytype) void {
         var lines = existing_lexer.*.splitInputTextIntoLines();
         var i: usize = 0;
