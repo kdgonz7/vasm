@@ -24,3 +24,23 @@ pub fn endianDirective(pp: *preprocessor.Preprocessor, args: []const parser.Valu
         pp.options.endian = .big;
     }
 }
+
+pub fn compile_if(pp: *preprocessor.Preprocessor, args: []const parser.Value) anyerror!void {
+    if (args.len != 1) {
+        return error.InvalidArgumentCount;
+    }
+    if (pp.options.format == null) {
+        return;
+    }
+
+    if (!std.mem.eql(u8, args[0].toIdentifier().identifier_string, pp.options.format.?)) {
+        std.log.err("compile-if: expected format '{s}' but found '{s}'.", .{
+            args[0].toIdentifier().identifier_string,
+            pp.options.format.?,
+        });
+
+        std.log.err("program will exit and compilation is over.", .{});
+
+        std.process.exit(1);
+    }
+}
