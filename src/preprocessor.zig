@@ -64,7 +64,13 @@ pub const Preprocessor = struct {
         switch (ast_root.*) {
             .root => |root| {
                 for (root.children.items) |*node| {
-                    return try self.handleAstDirectives(node);
+                    const res = try self.handleAstDirectives(node);
+                    switch (res) {
+                        .ok => {},
+                        .nonexistent_directive => |_| {
+                            return res;
+                        },
+                    }
                 }
             },
             .procedure => |_| {},
@@ -72,7 +78,9 @@ pub const Preprocessor = struct {
                 if (self.directives.get(mac.name.identifier_string)) |directive| {
                     try directive.function(self, mac.parameters.items[0..]);
                 } else {
-                    return PreprocessorResult{ .nonexistent_directive = mac.name.identifier_string };
+                    return PreprocessorResult{
+                        .nonexistent_directive = mac.name.identifier_string,
+                    };
                 }
             },
 
