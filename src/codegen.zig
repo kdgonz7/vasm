@@ -80,9 +80,43 @@ pub const Type = union(TypeTag) {
     }
 };
 
-/// An annotation for an instruction. Specifies the value types that the instruction can accept.
+/// Manages the result of a code generation.
 ///
-/// TODO
+/// This can help with debugging and printing information.
+pub const Result = union(ResultTag) {
+    ok: u0,
+    register_number_too_large: parse.Register,
+    params_to_instruction_are_wrong: Mismatch,
+    bad_result: Span,
+    instruction_doesnt_exist: Span,
+    instruction_coughed_up_bad_result: InstructionResult,
+    too_little_params: Span,
+
+    pub const ResultTag = enum {
+        ok,
+        register_number_too_large,
+        params_to_instruction_are_wrong,
+        bad_result,
+        instruction_doesnt_exist,
+        instruction_coughed_up_bad_result,
+        too_little_params,
+    };
+
+    pub fn isOk(self: *const Result) bool {
+        return switch (self.*) {
+            .ok => true,
+            else => false,
+        };
+    }
+};
+
+pub const Mismatch = struct {
+    expected: ValueTag,
+    actual: ValueTag,
+    span: Span,
+};
+
+/// An annotation for an instruction. Specifies the value types that the instruction can accept.
 pub const Annotation = struct {
     type_list: std.ArrayList(Type),
 
@@ -183,19 +217,6 @@ pub fn Vendor(comptime format_type: type) type {
         /// A list of instruction results ran from each instruction.
         results: std.ArrayList(InstructionResult),
 
-        /// The last result that caused an error
-        erroneous_result: InstructionResult = undefined,
-
-        /// The last token that caused an error
-        erroneous_token: Value = undefined,
-
-        /// The last span that caused an error
-        erroneous_span: Span = undefined,
-
-        /// The last expected value type
-        erroneous_expected: ?ValueTag = null,
-        erroneous_got: ?ValueTag = null,
-
         /// A map of annotations.
         annotations: std.StringHashMap(Annotation) = undefined,
 
@@ -264,13 +285,20 @@ pub fn Vendor(comptime format_type: type) type {
 
         /// Populates the vendor's procedure map with instructions by running their
         /// respective functions.
-        pub fn generateBinary(self: *Self, node: Node) !void {
+        pub fn generateBinary(self: *Self, node: Node) !Result {
             switch (node) {
                 .root => |*root_node| {
                     for (root_node.children.items) |*child| {
                         switch (child.*) {
                             .procedure => |*proc| {
-                                try self.generateBinaryProcedure(proc);
+                                const res = try self.generateBinaryProcedure(proc);
+
+                                switch (res) {
+                                    .ok => {}, // continue
+                                    else => {
+                                        return res;
+                                    },
+                                }
                             },
 
                             // ignore macros, that's for the macro stage
@@ -285,6 +313,8 @@ pub fn Vendor(comptime format_type: type) type {
 
                 else => {},
             }
+
+            return Result{ .ok = 0 };
         }
 
         /// Generates the memory layout of a procedure. Iterates the instructions and runs them
@@ -294,7 +324,7 @@ pub fn Vendor(comptime format_type: type) type {
         /// procedure map, and also run those accordingly. User-defined procedures have higher
         /// precedent over instruction set procedures.
         ///
-        pub fn generateBinaryProcedure(self: *Self, child: *Procedure) !void {
+        pub fn generateBinaryProcedure(self: *Self, child: *Procedure) !Result {
             const procedure_name = child.header;
             var generator = Generator(format_type).init(self.parent_allocator);
 
@@ -315,8 +345,9 @@ pub fn Vendor(comptime format_type: type) type {
                             if (self.instruction_set.get(ins.name.identifier_string)) |map_item| {
                                 for (ins.parameters.items) |it| {
                                     if (it.getType() == .register and it.toRegister().getRegisterNumber() > std.math.maxInt(format_type)) {
-                                        self.erroneous_token = it;
-                                        return error.RegisterNumberTooLarge;
+                                        return Result{
+                                            .register_number_too_large = it.toRegister(),
+                                        };
                                     }
                                 }
 
@@ -328,8 +359,9 @@ pub fn Vendor(comptime format_type: type) type {
                                     // if its a multiple type, check for either type.
 
                                     if (ins.parameters.items.len != annotation.type_list.items.len) {
-                                        self.erroneous_span = ins.name.span;
-                                        return error.ParamsToInstructionAreWrong;
+                                        return Result{
+                                            .too_little_params = ins.name.span,
+                                        };
                                     }
 
                                     for (0..ins.parameters.items.len) |i| {
@@ -338,12 +370,13 @@ pub fn Vendor(comptime format_type: type) type {
 
                                         if (cur_annot.getParamType() == .single_type) {
                                             if (it.getType() != cur_annot.asSingleType()) {
-                                                self.erroneous_span = it.getSpan();
-                                                self.erroneous_expected = cur_annot.asSingleType();
-                                                self.erroneous_got = it.getType();
-
-                                                // TODO: add annotation information
-                                                return error.ParamsToInstructionAreWrong;
+                                                return Result{
+                                                    .params_to_instruction_are_wrong = Mismatch{
+                                                        .expected = cur_annot.asSingleType(),
+                                                        .actual = it.getType(),
+                                                        .span = it.getSpan(),
+                                                    },
+                                                };
                                             }
                                         } else {
                                             // TODO: check for multiple types
@@ -357,13 +390,15 @@ pub fn Vendor(comptime format_type: type) type {
                                     .ok => {},
 
                                     else => {
-                                        self.erroneous_result = res;
-                                        return error.InstructionError;
+                                        return Result{
+                                            .instruction_coughed_up_bad_result = res,
+                                        };
                                     },
                                 }
                             } else {
-                                self.erroneous_span = ins.name.span;
-                                return error.InstructionDoesntExist;
+                                return Result{
+                                    .instruction_doesnt_exist = ins.name.span,
+                                };
                             }
 
                             // add the null byte to the end of the function if needed
@@ -378,6 +413,8 @@ pub fn Vendor(comptime format_type: type) type {
             }
 
             try self.procedure_map.put(procedure_name, generator.binary);
+
+            return Result{ .ok = 0 };
         }
 
         pub fn peepholeOptimizeBinary(self: *Self) !void {
@@ -456,7 +493,7 @@ test "creating and using a vendor with 0 argument function and one statement" {
 
     const root = try createNodeFrom(allocatir, "a: mov");
 
-    try sibc.generateBinary(root);
+    _ = try sibc.generateBinary(root);
     try std.testing.expect(sibc.procedure_map.get("a") != null);
     try std.testing.expectEqual(1, sibc.procedure_map.get("a").?.items.len);
 }
@@ -473,7 +510,7 @@ test "creating and using a vendor with 0 argument function and two statements" {
 
     const root = try createNodeFrom(allocatir, "a: mov\nmov");
 
-    try sibc.generateBinary(root);
+    _ = try sibc.generateBinary(root);
     try std.testing.expect(sibc.procedure_map.get("a") != null);
     try std.testing.expectEqual(2, sibc.procedure_map.get("a").?.items.len);
 }
@@ -490,7 +527,7 @@ test "creating and using a vendor with 0 argument functions, one calling the oth
 
     const root = try createNodeFrom(allocatir, "a: mov\nmov\n\nb: a\n");
 
-    try sibc.generateBinary(root);
+    _ = try sibc.generateBinary(root);
     try std.testing.expect(sibc.procedure_map.get("a") != null);
     try std.testing.expectEqual(2, sibc.procedure_map.get("a").?.items.len);
 
@@ -510,7 +547,7 @@ test "creating and using a vendor with 0 argument functions but multiple subrout
 
     const root = try createNodeFrom(allocatir, "a: mov\nb: a\n");
 
-    try sibc.generateBinary(root);
+    _ = try sibc.generateBinary(root);
     try std.testing.expect(sibc.procedure_map.get("a") != null);
     try std.testing.expectEqual(1, sibc.procedure_map.get("a").?.items.len);
 
@@ -530,7 +567,7 @@ test "creating and using a vendor with 1 argument function" {
 
     const root = try createNodeFrom(allocatir, "a: one 0x0A ;; runs the `one` instruction with `0x0A`");
 
-    try sample_vendor.generateBinary(root);
+    _ = try sample_vendor.generateBinary(root);
     try std.testing.expect(sample_vendor.procedure_map.get("a") != null);
     try std.testing.expectEqual(0, sample_vendor.procedure_map.get("a").?.items.len);
 }
@@ -547,7 +584,7 @@ test "dead code elimination" {
 
     const root = try createNodeFrom(allocatir, "a: one 0x0A\n b: one 0x0A\n _start: a\n ");
 
-    try sample_vendor.generateBinary(root);
+    _ = try sample_vendor.generateBinary(root);
 
     try sample_vendor.peephole_optimizer.remember("_start");
     try sample_vendor.peepholeOptimizeBinary();
@@ -570,9 +607,11 @@ test "creating and using a vendor with 0 argument functions that returns an erro
 
     const root = try createNodeFrom(allocatir, "a: mov\nb: a\n");
 
-    try std.testing.expectError(error.InstructionError, sibc.generateBinary(root));
-    try std.testing.expectEqual(.literal, sibc.erroneous_result.type_mismatch.expected);
-    try std.testing.expectEqual(.register, sibc.erroneous_result.type_mismatch.got);
+    const res = (try sibc.generateBinary(root));
+
+    try std.testing.expectEqual(false, res.isOk());
+    try std.testing.expectEqual(.literal, res.instruction_coughed_up_bad_result.type_mismatch.expected);
+    try std.testing.expectEqual(.register, res.instruction_coughed_up_bad_result.type_mismatch.got);
 }
 
 test "register too big" {
@@ -587,7 +626,7 @@ test "register too big" {
 
     const root = try createNodeFrom(allocatir, "_start: one R15353135");
 
-    try std.testing.expectError(error.RegisterNumberTooLarge, sample_vendor.generateBinary(root));
+    try std.testing.expectEqual(false, (try sample_vendor.generateBinary(root)).isOk());
 
     try sample_vendor.peephole_optimizer.remember("_start");
     try sample_vendor.peepholeOptimizeBinary();
@@ -619,7 +658,7 @@ test "annotations" {
 
     const root = try createNodeFrom(allocatir, "_start: one R5");
 
-    try sample_vendor.generateBinary(root);
+    _ = try sample_vendor.generateBinary(root);
 
     try sample_vendor.peephole_optimizer.remember("_start");
     try sample_vendor.peepholeOptimizeBinary();
