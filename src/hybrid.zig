@@ -106,12 +106,28 @@ test {
     defer vendors.deinit();
 
     // vend 1 & vend 2 have hello
-    try vend1.createAndImplementInstruction(i8, "hello", &a);
-    try vend2.createAndImplementInstruction(i8, "hello", &a);
+    try vend1.createAndImplementInstruction(
+        i8,
+        "hello",
+        &a,
+    );
+    try vend2.createAndImplementInstruction(
+        i8,
+        "hello",
+        &a,
+    );
 
     // vend 1 & vend 2 have world
-    try vend2.createAndImplementInstruction(i8, "world", &a);
-    try vend1.createAndImplementInstruction(i8, "world", &a);
+    try vend2.createAndImplementInstruction(
+        i8,
+        "world",
+        &a,
+    );
+    try vend1.createAndImplementInstruction(
+        i8,
+        "world",
+        &a,
+    );
 
     try vendors.append(vend1);
     try vendors.append(vend2);
