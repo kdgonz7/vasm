@@ -67,7 +67,7 @@ pub const Preprocessor = struct {
                     const res = try self.handleAstDirectives(node);
                     switch (res) {
                         .ok => {},
-                        .nonexistent_directive => |_| {
+                        else => {
                             return res;
                         },
                     }
