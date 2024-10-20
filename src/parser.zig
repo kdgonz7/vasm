@@ -49,6 +49,12 @@ pub const ParseError = error{
     /// A register (R<N>) is missing the number.
     RegisterMissingNumber,
 
+    /// A range ({START:END}) was missing the start or end or the start and end were not numbers
+    RangeExpectsNumber,
+
+    /// A range ({START:END}) was missing the separator
+    RangeExpectsSeparator,
+
     /// A token was expected
     ExpectedToken,
 
@@ -56,6 +62,10 @@ pub const ParseError = error{
     MacroNeverClosed,
     Overflow,
     InvalidCharacter,
+    OutOfMemory,
+    IndexOutOfRangeForReference,
+    RangeExpectsEnd,
+    RangeExpectsStart,
 };
 
 pub const ValueTag = enum {
@@ -542,7 +552,6 @@ pub const Parser = struct {
     }
 
     pub fn createValueFromToken(self: *Parser, token: *token_stream_z.Token) !Value {
-        _ = self;
         switch (token.*) {
             .number => {
                 return Value{
@@ -579,12 +588,81 @@ pub const Parser = struct {
                 return Value{ .literal = lit };
             },
 
+            .operator => |op| {
+                switch (op.kind) {
+                    .curly_open => {
+                        return try self.createValueFromRange();
+                    },
+                    else => {},
+                }
+            },
+
             else => {
                 return error.InvalidTokenValue;
             },
         }
 
         return error.InvalidTokenValue;
+    }
+
+    pub fn createValueFromRange(self: *Parser) ParseError!Value {
+        // we start on the {
+        // the syntax is
+        // {START:END}
+        // where START and END are numbers
+
+        // move past curly brace
+        self.incrementCurrentPosition();
+
+        if (self.streamIsAtEnd()) {
+            return error.RangeExpectsStart;
+        }
+
+        const start_value = try self.createValueFromToken(try self.getCurrentToken());
+
+        if (start_value.getType() != .number) {
+            return error.RangeExpectsNumber;
+        }
+
+        self.incrementCurrentPosition();
+
+        if (self.streamIsAtEnd()) {
+            return error.RangeExpectsSeparator;
+        }
+
+        const sep = try self.getCurrentToken();
+
+        if (sep.getType() != .operator or sep.operator.kind != OpKind.colon) {
+            return error.RangeExpectsSeparator;
+        }
+
+        self.incrementCurrentPosition();
+
+        const end_value = try self.createValueFromToken(try self.getCurrentToken());
+
+        if (end_value.getType() != .number) {
+            return error.RangeExpectsNumber;
+        }
+
+        self.incrementCurrentPosition();
+
+        // if we haven't found our close
+        if (self.streamIsAtEnd()) {
+            return error.RangeExpectsEnd;
+        } else {
+            const close = try self.getCurrentToken();
+
+            if (close.operator.kind != OpKind.curly_close) {
+                return error.RangeExpectsEnd;
+            }
+        }
+
+        return Value{
+            .range = Range{
+                .starting_position = @intCast(start_value.number.getNumber()),
+                .ending_position = @intCast(end_value.number.getNumber()),
+            },
+        };
     }
 };
 
@@ -824,6 +902,61 @@ test "creating and using a parser with trailing commas and newline " {
     try std.testing.expectEqualStrings("halt", start.children.items[0].instruction_call.name.identifier_string);
 }
 
+test "ranges" {
+    var arena = createTestArena();
+    const allocator = arena.allocator();
+    defer arena.deinit();
+
+    var lexer = Lexer.init(allocator);
+
+    lexer.setInputText("start:\n   halt {5:10}");
+    try lexer.startLexingInputText();
+
+    var parser = Parser.init(allocator, &lexer.stream);
+    defer parser.deinit();
+
+    var root = try parser.createRootNode();
+
+    try std.testing.expectEqual(1, root.asRoot().children.items.len);
+
+    const start = root.asRoot().children.items[0].procedure;
+
+    try std.testing.expectEqual(1, start.children.items.len);
+    try std.testing.expectEqual(1, start.children.items[0].instruction_call.parameters.items.len);
+
+    try std.testing.expectEqualStrings("halt", start.children.items[0].instruction_call.name.identifier_string);
+    try std.testing.expectEqual(5, start.children.items[0].instruction_call.parameters.items[0].range.starting_position);
+    try std.testing.expectEqual(10, start.children.items[0].instruction_call.parameters.items[0].range.ending_position);
+}
+
+test "ranges with other parameters" {
+    var arena = createTestArena();
+    const allocator = arena.allocator();
+    defer arena.deinit();
+
+    var lexer = Lexer.init(allocator);
+
+    lexer.setInputText("start:\n   halt {5:10}, 5");
+    try lexer.startLexingInputText();
+
+    var parser = Parser.init(allocator, &lexer.stream);
+    defer parser.deinit();
+
+    var root = try parser.createRootNode();
+
+    try std.testing.expectEqual(1, root.asRoot().children.items.len);
+
+    const start = root.asRoot().children.items[0].procedure;
+
+    try std.testing.expectEqual(1, start.children.items.len);
+    try std.testing.expectEqual(2, start.children.items[0].instruction_call.parameters.items.len);
+
+    try std.testing.expectEqualStrings("halt", start.children.items[0].instruction_call.name.identifier_string);
+    try std.testing.expectEqual(5, start.children.items[0].instruction_call.parameters.items[0].range.starting_position);
+    try std.testing.expectEqual(10, start.children.items[0].instruction_call.parameters.items[0].range.ending_position);
+    try std.testing.expectEqual(5, start.children.items[0].instruction_call.parameters.items[1].number.getNumber());
+}
+
 test "error test 1" {
     var arena = createTestArena();
     const allocator = arena.allocator();
@@ -886,4 +1019,68 @@ test "error test 4" {
 
     try std.testing.expectError(error.UnexpectedToken, parser.createRootNode());
     try std.testing.expectEqual(0, parser.token_stream_internal.stream_pos);
+}
+
+test "error test 5" {
+    var arena = createTestArena();
+    const allocator = arena.allocator();
+    defer arena.deinit();
+
+    var lexer = Lexer.init(allocator);
+
+    lexer.setInputText("start:\n   halt {5:10");
+    try lexer.startLexingInputText();
+
+    var parser = Parser.init(allocator, &lexer.stream);
+    defer parser.deinit();
+
+    try std.testing.expectError(error.RangeExpectsEnd, parser.createRootNode());
+}
+
+test "error test 6" {
+    var arena = createTestArena();
+    const allocator = arena.allocator();
+    defer arena.deinit();
+
+    var lexer = Lexer.init(allocator);
+
+    lexer.setInputText("start:\n   halt {");
+    try lexer.startLexingInputText();
+
+    var parser = Parser.init(allocator, &lexer.stream);
+    defer parser.deinit();
+
+    try std.testing.expectError(error.RangeExpectsStart, parser.createRootNode());
+}
+
+test "error test 7" {
+    var arena = createTestArena();
+    const allocator = arena.allocator();
+    defer arena.deinit();
+
+    var lexer = Lexer.init(allocator);
+
+    lexer.setInputText("start:\n   halt {a");
+    try lexer.startLexingInputText();
+
+    var parser = Parser.init(allocator, &lexer.stream);
+    defer parser.deinit();
+
+    try std.testing.expectError(error.RangeExpectsNumber, parser.createRootNode());
+}
+
+test "error test 8" {
+    var arena = createTestArena();
+    const allocator = arena.allocator();
+    defer arena.deinit();
+
+    var lexer = Lexer.init(allocator);
+
+    lexer.setInputText("start:\n   halt {1 2}");
+    try lexer.startLexingInputText();
+
+    var parser = Parser.init(allocator, &lexer.stream);
+    defer parser.deinit();
+
+    try std.testing.expectError(error.RangeExpectsSeparator, parser.createRootNode());
 }
