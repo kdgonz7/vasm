@@ -433,6 +433,7 @@ pub const Lexer = struct {
 
     pub fn consumeLiteral(self: *Lexer) !void {
         const beginning_of_literal = self.getCurrentPosition();
+        const begin_lit = self.area.char_pos;
 
         self.incrementCharacterPosition();
 
@@ -448,6 +449,7 @@ pub const Lexer = struct {
 
         const span = Span{
             .begin = beginning_of_literal,
+            .char_begin = begin_lit,
             .end = self.getCurrentPosition(),
             .line_number = self.getLineNumber(),
         };
