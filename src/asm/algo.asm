@@ -1,7 +1,8 @@
 ; $Id: algo.asm
 
 ; simple algorithm
-; [compat nexfuse]
+[compat nexfuse]
+[endian little]
 
 a:
 ; increment R1, this will go up until it's equal to 'A'
