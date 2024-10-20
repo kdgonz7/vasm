@@ -36,14 +36,33 @@ pub fn vendor(vend: *codegen.Vendor(i8)) !void {
     vend.nul_after_sequence = true;
     vend.nul_byte = 0;
 
-    try vend.createAndImplementInstruction(i8, "echo", &echoInstruction);
-    try vend.createAndImplementInstruction(i8, "mov", &moveInstruction);
-    try vend.createAndImplementInstruction(i8, "each", &eachInstruction);
-    try vend.createAndImplementInstruction(i8, "init", &initInstruction);
-    try vend.createAndImplementInstruction(i8, "put", &putInstruction);
-    try vend.createAndImplementInstruction(i8, "clear", &clearInstruction);
-    try vend.createAndImplementInstruction(i8, "reset", &resetInstruction);
-    try vend.createAndImplementInstruction(i8, "get", &getInstruction);
+    try vend.createAndImplementInstructionWithAnnotation(i8, "echo", &echoInstruction, &.{
+        codegen.Type.init(.literal),
+    });
+    try vend.createAndImplementInstructionWithAnnotation(i8, "mov", &moveInstruction, &.{
+        codegen.Type.init(.register),
+        codegen.Type.init(.number),
+    });
+    try vend.createAndImplementInstructionWithAnnotation(i8, "each", &eachInstruction, &.{
+        codegen.Type.init(.register),
+    });
+    try vend.createAndImplementInstructionWithAnnotation(i8, "init", &initInstruction, &.{
+        codegen.Type.init(.register),
+    });
+    try vend.createAndImplementInstructionWithAnnotation(i8, "put", &putInstruction, &.{
+        codegen.Type.init(.register),
+        codegen.Type.init(.number),
+        codegen.Type.init(.number),
+    });
+    try vend.createAndImplementInstructionWithAnnotation(i8, "clear", &clearInstruction, &.{});
+    try vend.createAndImplementInstructionWithAnnotation(i8, "reset", &resetInstruction, &.{
+        codegen.Type.init(.register),
+    });
+    try vend.createAndImplementInstructionWithAnnotation(i8, "get", &getInstruction, &.{
+        codegen.Type.init(.register),
+        codegen.Type.init(.number),
+        codegen.Type.init(.register),
+    });
 }
 
 /// OpenLUD-aware link configuration.
