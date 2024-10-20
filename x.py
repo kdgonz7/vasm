@@ -17,6 +17,12 @@ ASCIIDOCTOR = which("asciidoctor")
 # The zig binary location
 ZIG = which("zig")
 
+# The optimization of the output.
+OPTIMIZE = "ReleaseSafe"
+
+# The output target
+TARGET = ""
+
 
 # Helper functions
 def system(command: str) -> None:
@@ -103,7 +109,9 @@ def man_pages():
 
 def vasm():
     """Builds the vasm program"""
-    system(f"{ZIG} build --summary all")
+    system(
+        f"{ZIG} build -Doptimize={OPTIMIZE} {'-Dtarget=' + TARGET if TARGET != '' else ''} --summary all"
+    )
 
 
 def find_bad_lines():
@@ -232,7 +240,21 @@ commands = {
     },
 }
 
-for arg in argv[1:]:
+pos_argv = []
+
+for i in range(len(argv[1:]) + 1):
+    arg = argv[i]
+
+    if arg.startswith("--optimize="):
+        OPTIMIZE = arg[11:]
+
+    elif arg.startswith("--target="):
+        TARGET = arg[9:]
+
+    else:
+        pos_argv.append(arg)
+
+for arg in pos_argv[1:]:
     if commands.get(arg) is not None:
         for relier in commands[arg]["relies_on"]:
             if relier is not None:
