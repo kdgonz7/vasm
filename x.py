@@ -169,6 +169,24 @@ a directive can be any of the following:
                 f"{''.ljust(max_size() +12)}relies on steps: {Style.BRIGHT}{', '.join([x.__name__ for x in commands[command]['relies_on']])}{Style.RESET_ALL}"
             )
 
+    print(
+        f"""
+x.py also contains some standard Zig options:
+
+    --target=TARGET
+        Sets the target to build for, e.g. wasm32-unknown-unknown
+
+    --optimize=OPTIMIZE
+        Sets the optimization level to build for, e.g. Debug
+
+
+example usage:
+x.py clean
+x.py all
+x.py --target=wasm32-linux build
+"""
+    )
+
     exit(0)
 
 
