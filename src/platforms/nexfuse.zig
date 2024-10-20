@@ -43,6 +43,7 @@ const lexer = @import("../lexer.zig");
 const testing = @import("../testing/expect.zig");
 
 const Value = parser.Value;
+const ValueTag = parser.ValueTag;
 const Result = instruction_result.InstructionResult;
 const Return = codegen.InstructionError!Result;
 
@@ -91,23 +92,152 @@ pub fn runtime(vend: *codegen.Vendor(u8)) !void {
     vend.procedure_add_end = true;
     vend.end_byte = 22;
 
-    try vend.createAndImplementInstruction(u8, "echo", &echoIns);
-    try vend.createAndImplementInstruction(u8, "mov", &moveIns);
-    try vend.createAndImplementInstruction(u8, "each", &eachIns);
-    try vend.createAndImplementInstruction(u8, "reset", &resetIns);
-    try vend.createAndImplementInstruction(u8, "clear", &clearIns);
-    try vend.createAndImplementInstruction(u8, "zeroall", &clearIns);
-    try vend.createAndImplementInstruction(u8, "put", &putIns);
-    try vend.createAndImplementInstruction(u8, "get", &getIns);
-    try vend.createAndImplementInstruction(u8, "add", &addIns);
-    try vend.createAndImplementInstruction(u8, "nop", &nopIns);
-    try vend.createAndImplementInstruction(u8, "lar", &larIns);
-    try vend.createAndImplementInstruction(u8, "lsl", &lslIns);
-    try vend.createAndImplementInstruction(u8, "in", &inIns);
-    try vend.createAndImplementInstruction(u8, "cmp", &cmpIns);
-    try vend.createAndImplementInstruction(u8, "inc", &incIns);
-    try vend.createAndImplementInstruction(u8, "rep", &repIns);
-    try vend.createAndImplementInstruction(u8, "jmp", &gosubIns);
+    try vend.createAndImplementInstructionWithAnnotation(
+        u8,
+        "echo",
+        &echoIns,
+        &.{
+            codegen.Type.init(.literal),
+        },
+    );
+
+    try vend.createAndImplementInstructionWithAnnotation(
+        u8,
+        "mov",
+        &moveIns,
+        &.{
+            codegen.Type.init(.register),
+            codegen.Type.init(.number),
+        },
+    );
+
+    // EACH [REGISTER]
+    try vend.createAndImplementInstructionWithAnnotation(
+        u8,
+        "each",
+        &eachIns,
+
+        &.{
+            codegen.Type.init(.register),
+        },
+    );
+
+    // RESET [reg]
+    try vend.createAndImplementInstructionWithAnnotation(
+        u8,
+        "reset",
+        &resetIns,
+        &.{
+            codegen.Type.init(.register),
+        },
+    );
+    try vend.createAndImplementInstructionWithAnnotation(
+        u8,
+        "clear",
+        &clearIns,
+        &.{},
+    );
+
+    try vend.createAndImplementInstructionWithAnnotation(
+        u8,
+        "zeroall",
+        &clearIns,
+        &.{},
+    );
+
+    try vend.createAndImplementInstructionWithAnnotation(
+        u8,
+        "put",
+        &putIns,
+        &.{
+            codegen.Type.init(.register),
+            codegen.Type.init(.number),
+            codegen.Type.init(.number),
+        },
+    );
+    try vend.createAndImplementInstructionWithAnnotation(
+        u8,
+        "get",
+        &getIns,
+        &.{
+            codegen.Type.init(.register),
+            codegen.Type.init(.number),
+            codegen.Type.init(.register),
+        },
+    );
+
+    try vend.createAndImplementInstructionWithAnnotation(
+        u8,
+        "add",
+        &addIns,
+        &.{
+            codegen.Type.init(.register),
+            codegen.Type.init(.register),
+        },
+    );
+
+    try vend.createAndImplementInstructionWithAnnotation(
+        u8,
+        "nop",
+        &nopIns,
+        &.{},
+    );
+
+    try vend.createAndImplementInstructionWithAnnotation(
+        u8,
+        "lar",
+        &larIns,
+        &.{
+            codegen.Type.init(.register),
+        },
+    );
+
+    try vend.createAndImplementInstruction(u8, "lsl", &lslIns); // TODO: var args
+
+    try vend.createAndImplementInstructionWithAnnotation(u8, "in", &inIns, &.{
+        codegen.Type.init(.register),
+    });
+
+    // CMP R1, R2, TRUE_LABEL, FALSE_LABEL
+    try vend.createAndImplementInstructionWithAnnotation(
+        u8,
+        "cmp",
+        &cmpIns,
+        &.{
+            codegen.Type.init(.register),
+            codegen.Type.init(.register),
+            codegen.Type.init(.identifier),
+            codegen.Type.init(.identifier),
+        },
+    );
+
+    try vend.createAndImplementInstructionWithAnnotation(
+        u8,
+        "inc",
+        &incIns,
+        &.{
+            codegen.Type.init(.register),
+        },
+    );
+
+    try vend.createAndImplementInstructionWithAnnotation(
+        u8,
+        "rep",
+        &repIns,
+        &.{
+            codegen.Type.init(.register),
+            codegen.Type.init(.number),
+        },
+    );
+
+    try vend.createAndImplementInstructionWithAnnotation(
+        u8,
+        "jmp",
+        &gosubIns,
+        &.{
+            codegen.Type.init(.identifier),
+        },
+    );
 }
 
 //TODO: add type checks for all of these instructions
