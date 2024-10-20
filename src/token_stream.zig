@@ -80,6 +80,8 @@ pub const OperatorKind = enum {
     semicolon,
     bracket_open,
     bracket_close,
+    curly_open,
+    curly_close,
     newline,
 };
 
