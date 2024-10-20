@@ -1,0 +1,13 @@
+= Macros
+
+== What are macros?
+
+Macros are essentially compile-time statements. These statements have no awareness of even the root source code but simply serve as a way for the program to control how it gets compiled.
+
+== Syntax
+
+[source,asm]
+[Ident *Args...]
+
+[source, asm]
+[compat nexfuse] ; specify this program compiling with NexFUSE.
