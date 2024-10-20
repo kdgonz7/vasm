@@ -219,7 +219,6 @@ pub fn runCompilerFrontend() !void {
 
     if (selected_vm == .unknown) {
         report.errorMessage("unknown format '{s}'", .{opts.format.?});
-        report.leaveNote("format enumerated to '{s}'", .{@tagName(selected_vm)});
         std.process.exit(1);
     }
 
