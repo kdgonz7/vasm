@@ -5,6 +5,9 @@ const lexer = @import("lexer.zig");
 const linker = @import("linker.zig");
 const parser = @import("parser.zig");
 const compiler_status = @import("compiler_status.zig");
+const codegen = @import("codegen.zig");
+
+const Result = codegen.Result;
 
 /// Manages standard error and standard output files. Prints in color cross platform.
 pub const Reporter = struct {
@@ -214,47 +217,48 @@ pub const Reporter = struct {
         }
     }
 
-    pub fn genError(self: *Reporter, err: anyerror, gen: anytype, ctx: anytype) noreturn {
+    pub fn genError(self: *Reporter, err: Result, gen: anytype, ctx: anytype) noreturn {
+        _ = gen;
         switch (err) {
-            error.RegisterNumberTooLarge => {
+            .register_number_too_large => |reg| {
                 self.errorMessage("{s}:{d}:{d}: {s}", .{
                     ctx.file_name,
-                    gen.erroneous_token.toRegister().span.line_number,
-                    gen.erroneous_token.toRegister().span.begin,
+                    reg.span.line_number,
+                    reg.span.begin,
                     "register number too large",
                 });
 
-                ctx.lexer.area.char_pos = gen.erroneous_token.toRegister().span.begin;
-                ctx.lexer.area.line_number = gen.erroneous_token.toRegister().span.line_number;
+                ctx.lexer.area.char_pos = reg.span.begin;
+                ctx.lexer.area.line_number = reg.span.line_number;
 
                 self.getSourceLocation(ctx.lexer, .suggestion);
             },
 
-            error.InstructionDoesntExist => {
+            .instruction_doesnt_exist => |span| {
                 self.errorMessage("{s}:{d}:{d}: {s}", .{
                     ctx.file_name,
-                    gen.erroneous_span.line_number,
-                    gen.erroneous_span.char_begin,
+                    span.line_number,
+                    span.char_begin,
                     "instruction does not exist for this architecture",
                 });
 
-                ctx.lexer.area.char_pos = gen.erroneous_span.char_begin;
-                ctx.lexer.area.line_number = gen.erroneous_span.line_number;
+                ctx.lexer.area.char_pos = span.char_begin;
+                ctx.lexer.area.line_number = span.line_number;
 
                 self.getSourceLocation(ctx.lexer, .erroneous);
             },
 
-            error.ParamsToInstructionAreWrong => {
+            .params_to_instruction_are_wrong => |mismatch| {
                 self.errorMessage("{s}:{d}:{d}: expected '{s}', got '{s}'", .{
                     ctx.file_name,
-                    gen.erroneous_span.line_number,
-                    gen.erroneous_span.char_begin,
-                    @tagName(gen.erroneous_expected.?),
-                    @tagName(gen.erroneous_got.?),
+                    mismatch.span.line_number,
+                    mismatch.span.char_begin,
+                    @tagName(mismatch.expected),
+                    @tagName(mismatch.actual),
                 });
 
-                ctx.lexer.area.char_pos = gen.erroneous_span.char_begin;
-                ctx.lexer.area.line_number = gen.erroneous_span.line_number;
+                ctx.lexer.area.char_pos = mismatch.span.char_begin;
+                ctx.lexer.area.line_number = mismatch.span.line_number;
 
                 self.getSourceLocation(ctx.lexer, .erroneous);
             },
@@ -262,7 +266,7 @@ pub const Reporter = struct {
             else => {
                 self.errorMessage("{s}: {s}", .{
                     ctx.file_name,
-                    @errorName(err),
+                    @tagName(err),
                 });
             },
         }
