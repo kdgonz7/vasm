@@ -6,6 +6,11 @@ pub fn compatDirective(pp: *preprocessor.Preprocessor, args: []const parser.Valu
     if (args.len != 1) {
         return error.InvalidArgumentCount;
     }
+
+    if (args[0].getType() != .identifier) {
+        return error.InvalidArgumentType;
+    }
+
     pp.options.format = args[0].toIdentifier().identifier_string;
 }
 
