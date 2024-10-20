@@ -4,13 +4,14 @@
 
 const std = @import("std");
 const compiler_main = @import("compiler_main.zig");
-
 const lexer = @import("lexer.zig");
 const parser = @import("parser.zig");
+const token_stream = @import("token_stream.zig");
 
 const Options = compiler_main.Options;
 const Value = parser.Value;
 const ValueTag = parser.ValueTag;
+const Ident = token_stream.Identifier;
 const Parser = parser.Parser;
 const Lexer = lexer.Lexer;
 
@@ -21,7 +22,7 @@ pub const Directive = struct {
 
 pub const PreprocessorResult = union(Tag) {
     ok: u0,
-    nonexistent_directive: []const u8,
+    nonexistent_directive: Ident,
 
     pub const Tag = enum {
         ok,
@@ -79,7 +80,7 @@ pub const Preprocessor = struct {
                     try directive.function(self, mac.parameters.items[0..]);
                 } else {
                     return PreprocessorResult{
-                        .nonexistent_directive = mac.name.identifier_string,
+                        .nonexistent_directive = mac.name,
                     };
                 }
             },
@@ -121,7 +122,7 @@ test {
     const res = try pp.handleAstDirectives(&root);
 
     if (res == .nonexistent_directive) {
-        try std.testing.expectEqualStrings("compat", res.nonexistent_directive);
+        try std.testing.expectEqualStrings("compat", res.nonexistent_directive.identifier_string);
     } else {
         try std.testing.expect(false);
     }
