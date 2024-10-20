@@ -14,6 +14,10 @@ pub fn endianDirective(pp: *preprocessor.Preprocessor, args: []const parser.Valu
         return error.InvalidArgumentCount;
     }
 
+    if (args[0].getType() != .identifier) {
+        return error.InvalidArgumentType;
+    }
+
     const end = args[0].toIdentifier();
 
     if (std.mem.eql(u8, end.identifier_string, "little")) {
@@ -29,8 +33,13 @@ pub fn compile_if(pp: *preprocessor.Preprocessor, args: []const parser.Value) an
     if (args.len != 1) {
         return error.InvalidArgumentCount;
     }
+
     if (pp.options.format == null) {
         return;
+    }
+
+    if (args[0].getType() != .identifier) {
+        return error.InvalidArgumentType;
     }
 
     if (!std.mem.eql(u8, args[0].toIdentifier().identifier_string, pp.options.format.?)) {
