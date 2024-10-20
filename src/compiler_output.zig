@@ -63,6 +63,24 @@ pub const Reporter = struct {
         self.setStderrColor(.reset);
     }
 
+    pub fn preprocessErrorMessage(self: *Reporter, comptime format: []const u8, args: anytype) void {
+        const wri = self.stderr.writer();
+
+        wri.print("vasm: ", .{}) catch unreachable;
+        self.setStderrColor(.cyan);
+        self.setStderrColor(.magenta);
+
+        wri.print("preprocessor error: ", .{}) catch unreachable;
+
+        self.setStderrColor(.reset);
+        self.setStderrColor(.bold);
+
+        wri.print(format, args) catch unreachable;
+        wri.print("\n", .{}) catch unreachable;
+
+        self.setStderrColor(.reset);
+    }
+
     pub fn leaveNote(self: *Reporter, comptime format: []const u8, args: anytype) void {
         const wri = self.stderr.writer();
 
@@ -206,12 +224,39 @@ pub const Reporter = struct {
                     "register number too large",
                 });
 
-                ctx.report.getCustomarySourceLocationUsingLexer(
-                    ctx.lexer,
-                    gen.erroneous_token.toRegister().span.char_begin,
-                    gen.erroneous_token.toRegister().span.end,
-                    gen.erroneous_token.toRegister().span.line_number - 1,
-                );
+                ctx.lexer.area.char_pos = gen.erroneous_token.toRegister().span.begin;
+                ctx.lexer.area.line_number = gen.erroneous_token.toRegister().span.line_number;
+
+                self.getSourceLocation(ctx.lexer, .suggestion);
+            },
+
+            error.InstructionDoesntExist => {
+                self.errorMessage("{s}:{d}:{d}: {s}", .{
+                    ctx.file_name,
+                    gen.erroneous_span.line_number,
+                    gen.erroneous_span.char_begin,
+                    "instruction does not exist for this architecture",
+                });
+
+                ctx.lexer.area.char_pos = gen.erroneous_span.char_begin;
+                ctx.lexer.area.line_number = gen.erroneous_span.line_number;
+
+                self.getSourceLocation(ctx.lexer, .erroneous);
+            },
+
+            error.ParamsToInstructionAreWrong => {
+                self.errorMessage("{s}:{d}:{d}: expected '{s}', got '{s}'", .{
+                    ctx.file_name,
+                    gen.erroneous_span.line_number,
+                    gen.erroneous_span.char_begin,
+                    @tagName(gen.erroneous_expected.?),
+                    @tagName(gen.erroneous_got.?),
+                });
+
+                ctx.lexer.area.char_pos = gen.erroneous_span.char_begin;
+                ctx.lexer.area.line_number = gen.erroneous_span.line_number;
+
+                self.getSourceLocation(ctx.lexer, .erroneous);
             },
 
             else => {
@@ -228,14 +273,16 @@ pub const Reporter = struct {
     pub fn printPreprocessError(self: *Reporter, err_result: anytype, lex: *lexer.Lexer) noreturn {
         switch (err_result) {
             .nonexistent_directive => {
-                self.errorMessage("unknown directive `{s}`", .{err_result.nonexistent_directive.identifier_string});
+                self.preprocessErrorMessage("unknown directive `{s}`", .{err_result.nonexistent_directive.identifier_string});
+
                 lex.area.char_pos = err_result.nonexistent_directive.span.char_begin;
                 lex.area.line_number = err_result.nonexistent_directive.span.line_number;
 
                 self.getSourceLocation(lex, .suggestion);
             },
+
             else => {
-                self.errorMessage("preprocessor error: {s}", .{@tagName(err_result)});
+                self.preprocessErrorMessage("preprocessor error: {s}", .{@tagName(err_result)});
             },
         }
 
