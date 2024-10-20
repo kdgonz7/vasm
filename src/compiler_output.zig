@@ -263,6 +263,31 @@ pub const Reporter = struct {
                 self.getSourceLocation(ctx.lexer, .erroneous);
             },
 
+            .too_little_params => |too_little_info| {
+                const span = too_little_info.span;
+
+                self.errorMessage("{s}:{d}:{d}: the parameters to this function are incorrect.", .{
+                    ctx.file_name,
+                    span.line_number,
+                    span.char_begin,
+                });
+
+                ctx.lexer.area.char_pos = span.char_begin;
+                ctx.lexer.area.line_number = span.line_number;
+
+                self.getSourceLocation(ctx.lexer, .erroneous);
+
+                var stderr = std.io.getStdErr().writer();
+
+                stderr.print("help: function '{s}' has a type signature of: {s} ", .{ too_little_info.name, too_little_info.name }) catch unreachable;
+
+                for (too_little_info.annotation.type_list.items) |annot| {
+                    if (annot.getParamType() == .single_type) {
+                        stderr.print("{{{s}}} ", .{@tagName(annot.asSingleType())}) catch unreachable;
+                    }
+                }
+            },
+
             else => {
                 self.errorMessage("{s}: {s}", .{
                     ctx.file_name,
