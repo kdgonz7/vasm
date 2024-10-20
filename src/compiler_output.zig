@@ -118,19 +118,6 @@ pub const Reporter = struct {
         std.process.exit(1);
     }
 
-    pub fn printPreprocessError(self: *Reporter, err_result: anytype) noreturn {
-        switch (err_result) {
-            .nonexistent_directive => {
-                self.errorMessage("unknown directive `{s}`", .{err_result.nonexistent_directive});
-            },
-            else => {
-                self.errorMessage("preprocessor error: {s}", .{@tagName(err_result)});
-            },
-        }
-
-        std.process.exit(1);
-    }
-
     pub fn getCustomarySourceLocationUsingLexer(self: *Reporter, existing_lexer: anytype, begin: anytype, end: anytype, line_number: anytype) void {
         var lines = existing_lexer.*.splitInputTextIntoLines();
         var i: usize = 0;
@@ -238,6 +225,23 @@ pub const Reporter = struct {
         std.process.exit(1);
     }
 
+    pub fn printPreprocessError(self: *Reporter, err_result: anytype, lex: *lexer.Lexer) noreturn {
+        switch (err_result) {
+            .nonexistent_directive => {
+                self.errorMessage("unknown directive `{s}`", .{err_result.nonexistent_directive.identifier_string});
+                lex.area.char_pos = err_result.nonexistent_directive.span.char_begin;
+                lex.area.line_number = err_result.nonexistent_directive.span.line_number;
+
+                self.getSourceLocation(lex, .suggestion);
+            },
+            else => {
+                self.errorMessage("preprocessor error: {s}", .{@tagName(err_result)});
+            },
+        }
+
+        std.process.exit(1);
+    }
+
     pub fn astError(self: *Reporter, err: anytype, ctx: anytype, lex: *lexer.Lexer, pars: *parser.Parser) noreturn {
         const last = pars.token_stream_internal.internal_list.items[pars.token_stream_internal.stream_pos - 1];
 
@@ -264,6 +268,19 @@ pub const Reporter = struct {
                     lex.area.char_pos,
                     '}',
                 });
+                self.getSourceLocation(lex, .suggestion);
+            },
+
+            error.RangeStartsAfterEnd => {
+                lex.area.char_pos = last.getSpan().char_begin;
+                lex.area.line_number = last.getSpan().line_number;
+
+                self.errorMessage("{s}:{d}:{d}: range starts after end (syntax is start:end)", .{
+                    ctx.file_name,
+                    lex.area.line_number,
+                    lex.area.char_pos,
+                });
+
                 self.getSourceLocation(lex, .suggestion);
             },
 
