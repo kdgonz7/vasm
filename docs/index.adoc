@@ -19,8 +19,13 @@ VASM, in short, provides generation through *vendors*, vendors allow for platfor
 * link:./formats/openlud.html[OpenLUD]
 * link:./formats/siax.html[SiAX]
 
-=== Compiler Documentation
+=== link:./compiler/index.html[Compiler Documentation]
 
 * link:./compiler/intro.html[Compiler Intro]
 * link:./compiler/flags.html[Compiler Flags]
+* link:./compiler/macros.html[Compiler Macros]
+* link:./compiler/directives.html[Compiler Directives Documentation]
+
+=== Other
+
 * link:./man/index.html[VASM Manual Pages]

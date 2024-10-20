@@ -1,0 +1,9 @@
+= Macro Directives Docs
+
+== `compat`
+
+The *compat* macro specifies what platform this program is compatible with. Essentially equal to setting `-f` in the compiler command line options.
+
+== `endian`
+
+Specifies the endianness of the compiled file.
