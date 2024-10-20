@@ -152,6 +152,7 @@ test {
 
     try std.testing.expectEqual(res.getTag(), .ok);
 }
+
 test {
     var arena = std.heap.ArenaAllocator.init(std.testing.allocator);
     const allocator = arena.allocator();
