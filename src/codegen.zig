@@ -23,17 +23,21 @@ const token_stream = @import("token_stream.zig");
 
 const Lexer = lex.Lexer;
 const LexerArea = lex.LexerArea;
-const Span = token_stream.Span;
 
 const Parser = parse.Parser;
 
 const Node = parse.Node;
 const NodeTag = parse.NodeTag;
+
 const Value = parse.Value;
+const ValueTag = parse.ValueTag;
+
 const Root = parse.Root;
 const Procedure = parse.Procedure;
 
 const InstructionResult = instruction_result.InstructionResult;
+
+const Span = token_stream.Span;
 
 pub const InstructionError = error{
     OutOfMemory,
@@ -41,12 +45,56 @@ pub const InstructionError = error{
     InstructionDoesntExist,
     TestExpectedEqual,
     InstructionError,
+    ParamsToInstructionAreWrong,
 };
 
 pub const CodegenError = error{
     /// an invalid root expression was encountered
     InvalidExpressionRoot,
     RegisterNumberTooLarge,
+};
+
+pub const TypeTag = enum {
+    single_type,
+};
+
+pub const Type = union(TypeTag) {
+    single_type: ValueTag,
+
+    pub fn init(t: ValueTag) Type {
+        return Type{
+            .single_type = t,
+        };
+    }
+
+    pub fn getParamType(self: *const Type) TypeTag {
+        return switch (self.*) {
+            .single_type => TypeTag.single_type,
+        };
+    }
+
+    pub fn asSingleType(self: *const Type) ValueTag {
+        switch (self.*) {
+            .single_type => |t| return t,
+        }
+    }
+};
+
+/// An annotation for an instruction. Specifies the value types that the instruction can accept.
+///
+/// TODO
+pub const Annotation = struct {
+    type_list: std.ArrayList(Type),
+
+    pub fn init(parent_allocator: std.mem.Allocator, t_list: []const Type) Annotation {
+        var ann = Annotation{
+            .type_list = std.ArrayList(Type).init(parent_allocator),
+        };
+
+        ann.type_list.appendSlice(t_list) catch unreachable;
+
+        return ann;
+    }
 };
 
 /// Instruction information for compiler debugging. Not meant for actual use in runtimes, etc.
@@ -57,6 +105,8 @@ pub fn Instruction(comptime format: type) type {
 
         /// The function ran from the instruction
         function: *const fn (*Generator(format), *Vendor(format), []Value) InstructionError!InstructionResult,
+
+        annotation: ?Annotation = null,
 
         pub fn init(name: []const u8, function: *const fn (*Generator(format), *Vendor(format), []Value) InstructionError!InstructionResult) Instruction(format) {
             return Instruction(format){
@@ -133,9 +183,21 @@ pub fn Vendor(comptime format_type: type) type {
         /// A list of instruction results ran from each instruction.
         results: std.ArrayList(InstructionResult),
 
+        /// The last result that caused an error
         erroneous_result: InstructionResult = undefined,
+
+        /// The last token that caused an error
         erroneous_token: Value = undefined,
+
+        /// The last span that caused an error
         erroneous_span: Span = undefined,
+
+        /// The last expected value type
+        erroneous_expected: ?ValueTag = null,
+        erroneous_got: ?ValueTag = null,
+
+        /// A map of annotations.
+        annotations: std.StringHashMap(Annotation) = undefined,
 
         pub fn init(parent_allocator: std.mem.Allocator) Self {
             return Self{
@@ -143,6 +205,7 @@ pub fn Vendor(comptime format_type: type) type {
                 .procedure_map = std.StringHashMap(std.ArrayList(format_type)).init(parent_allocator),
                 .instruction_set = std.StringHashMap(Instruction(format_type)).init(parent_allocator),
                 .peephole_optimizer = peephole.PeepholeOptimizer(format_type).init(parent_allocator),
+                .annotations = std.StringHashMap(Annotation).init(parent_allocator),
                 .results = std.ArrayList(InstructionResult).init(parent_allocator),
             };
         }
@@ -157,11 +220,46 @@ pub fn Vendor(comptime format_type: type) type {
             try self.instruction_set.put(name, instruction.*);
         }
 
-        pub fn createAndImplementInstruction(self: *Self, comptime size: type, name: []const u8, function: *const fn (generator: *Generator(size), vendor: *Vendor(size), args: []Value) InstructionError!InstructionResult) !void {
+        pub fn createAndImplementInstruction(
+            self: *Self,
+            comptime size: type,
+            name: []const u8,
+            function: *const fn (
+                generator: *Generator(size),
+                vendor: *Vendor(size),
+                args: []Value,
+            ) InstructionError!InstructionResult,
+        ) !void {
             try self.instruction_set.put(name, Instruction(size){
                 .function = function,
                 .name = name,
             });
+        }
+
+        pub fn createAndImplementInstructionWithAnnotation(
+            self: *Self,
+            comptime size: type,
+            name: []const u8,
+            function: *const fn (
+                generator: *Generator(size),
+                vendor: *Vendor(size),
+                args: []Value,
+            ) InstructionError!InstructionResult,
+            type_list: []const Type,
+        ) !void {
+            try self.instruction_set.put(name, Instruction(size){
+                .function = function,
+                .name = name,
+            });
+
+            try self.registerAnnotation(name, type_list);
+        }
+
+        pub fn registerAnnotation(self: *Self, for_function: []const u8, type_list: []const Type) !void {
+            try self.annotations.put(for_function, Annotation.init(
+                self.parent_allocator,
+                type_list,
+            ));
         }
 
         /// Populates the vendor's procedure map with instructions by running their
@@ -212,12 +310,44 @@ pub fn Vendor(comptime format_type: type) type {
                             // that instruction has been expanded once and is in use
                             try self.peephole_optimizer.remember(ins.name.identifier_string);
                         } else {
+
                             // built in instruction
                             if (self.instruction_set.get(ins.name.identifier_string)) |map_item| {
                                 for (ins.parameters.items) |it| {
                                     if (it.getType() == .register and it.toRegister().getRegisterNumber() > std.math.maxInt(format_type)) {
                                         self.erroneous_token = it;
                                         return error.RegisterNumberTooLarge;
+                                    }
+                                }
+
+                                if (self.annotations.get(ins.name.identifier_string)) |annotation| {
+                                    // conditions for annotations
+                                    // the param list and annotation list must be the same len
+                                    // they must have the same types
+                                    // annotation list and check it against the param list
+                                    // if its a multiple type, check for either type.
+
+                                    if (ins.parameters.items.len != annotation.type_list.items.len) {
+                                        self.erroneous_span = ins.name.span;
+                                        return error.ParamsToInstructionAreWrong;
+                                    }
+
+                                    for (0..ins.parameters.items.len) |i| {
+                                        const it = ins.parameters.items[i];
+                                        const cur_annot = annotation.type_list.items[i];
+
+                                        if (cur_annot.getParamType() == .single_type) {
+                                            if (it.getType() != cur_annot.asSingleType()) {
+                                                self.erroneous_span = it.getSpan();
+                                                self.erroneous_expected = cur_annot.asSingleType();
+                                                self.erroneous_got = it.getType();
+
+                                                // TODO: add annotation information
+                                                return error.ParamsToInstructionAreWrong;
+                                            }
+                                        } else {
+                                            // TODO: check for multiple types
+                                        }
                                     }
                                 }
 
@@ -458,6 +588,38 @@ test "register too big" {
     const root = try createNodeFrom(allocatir, "_start: one R15353135");
 
     try std.testing.expectError(error.RegisterNumberTooLarge, sample_vendor.generateBinary(root));
+
+    try sample_vendor.peephole_optimizer.remember("_start");
+    try sample_vendor.peepholeOptimizeBinary();
+}
+
+test "types" {
+    const t = Type.init(.register);
+    try std.testing.expectEqual(ValueTag.register, t.asSingleType());
+}
+
+test "annotations" {
+    var arena = std.heap.ArenaAllocator.init(std.testing.allocator);
+    const allocatir = arena.allocator();
+    defer arena.deinit();
+
+    var sample_vendor = Vendor(i8).init(allocatir);
+
+    var one_ins = Instruction(i8).init("one", &registerSample);
+    try sample_vendor.implementInstruction("one", &one_ins);
+
+    try sample_vendor.registerAnnotation(
+        "one",
+        &[_]Type{
+            .{
+                .single_type = .register,
+            },
+        },
+    );
+
+    const root = try createNodeFrom(allocatir, "_start: one R5");
+
+    try sample_vendor.generateBinary(root);
 
     try sample_vendor.peephole_optimizer.remember("_start");
     try sample_vendor.peepholeOptimizeBinary();
