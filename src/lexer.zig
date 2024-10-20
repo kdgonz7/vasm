@@ -230,6 +230,12 @@ pub const Lexer = struct {
                     .operator = Operator{
                         .kind = .newline,
                         .position = self.getCurrentPosition(),
+                        .span = Span{
+                            .begin = self.area.char_pos,
+                            .char_begin = self.area.char_pos,
+                            .end = self.area.char_pos + 1,
+                            .line_number = self.getLineNumber(),
+                        },
                     },
                 });
 
@@ -241,6 +247,12 @@ pub const Lexer = struct {
                     .operator = Operator{
                         .kind = .colon,
                         .position = self.getCurrentPosition(),
+                        .span = Span{
+                            .begin = self.area.char_pos,
+                            .char_begin = self.area.char_pos,
+                            .end = self.area.char_pos + 1,
+                            .line_number = self.getLineNumber(),
+                        },
                     },
                 });
             },
@@ -250,6 +262,12 @@ pub const Lexer = struct {
                     .operator = Operator{
                         .kind = .dot,
                         .position = self.getCurrentPosition(),
+                        .span = Span{
+                            .begin = self.area.char_pos,
+                            .char_begin = self.area.char_pos,
+                            .end = self.area.char_pos + 1,
+                            .line_number = self.getLineNumber(),
+                        },
                     },
                 });
             },
@@ -259,6 +277,12 @@ pub const Lexer = struct {
                     .operator = Operator{
                         .kind = .at_symbol,
                         .position = self.getCurrentPosition(),
+                        .span = Span{
+                            .begin = self.area.char_pos,
+                            .char_begin = self.area.char_pos,
+                            .end = self.area.char_pos + 1,
+                            .line_number = self.getLineNumber(),
+                        },
                     },
                 });
             },
@@ -268,6 +292,13 @@ pub const Lexer = struct {
                     .operator = Operator{
                         .kind = .comma,
                         .position = self.getCurrentPosition(),
+                        .span = Span{
+                            .begin = self.area.char_pos,
+                            .char_begin = self.area.char_pos,
+
+                            .end = self.area.char_pos + 1,
+                            .line_number = self.getLineNumber(),
+                        },
                     },
                 });
             },
@@ -277,6 +308,12 @@ pub const Lexer = struct {
                     .operator = Operator{
                         .kind = .bracket_open,
                         .position = self.getCurrentPosition(),
+                        .span = Span{
+                            .begin = self.area.char_pos,
+                            .char_begin = self.area.char_pos,
+                            .end = self.area.char_pos + 1,
+                            .line_number = self.getLineNumber(),
+                        },
                     },
                 });
             },
@@ -286,6 +323,12 @@ pub const Lexer = struct {
                     .operator = Operator{
                         .kind = .bracket_close,
                         .position = self.getCurrentPosition(),
+                        .span = Span{
+                            .begin = self.area.char_pos,
+                            .char_begin = self.area.char_pos,
+                            .end = self.area.char_pos + 1,
+                            .line_number = self.getLineNumber(),
+                        },
                     },
                 });
             },
@@ -295,6 +338,12 @@ pub const Lexer = struct {
                     .operator = Operator{
                         .kind = .curly_open,
                         .position = self.getCurrentPosition(),
+                        .span = Span{
+                            .char_begin = self.area.char_pos,
+                            .begin = self.getCurrentPosition(),
+                            .end = self.getCurrentPosition() + 1,
+                            .line_number = self.getLineNumber(),
+                        },
                     },
                 });
             },
@@ -304,6 +353,12 @@ pub const Lexer = struct {
                     .operator = Operator{
                         .kind = .curly_close,
                         .position = self.getCurrentPosition(),
+                        .span = Span{
+                            .begin = self.getCurrentPosition(),
+                            .char_begin = self.area.char_pos,
+                            .end = self.getCurrentPosition() + 1,
+                            .line_number = self.getLineNumber(),
+                        },
                     },
                 });
             },
@@ -352,6 +407,7 @@ pub const Lexer = struct {
         const span = Span{
             .begin = beginning_number,
             .end = self.getCurrentPosition(),
+            .char_begin = begin_char,
             .line_number = self.getLineNumber(),
         };
 
