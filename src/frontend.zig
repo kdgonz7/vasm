@@ -212,7 +212,7 @@ pub fn runCompilerFrontend() !void {
     const res = compiler_pp.preprocessWithDefaultRuntime(allocator, &opts, &ast) catch |err| report.printError(&lex, file, err);
 
     if (res != .ok) {
-        report.printPreprocessError(res);
+        report.printPreprocessError(res, &lex);
     }
 
     const selected_vm = vendorStringToVendor(opts.format.?);
