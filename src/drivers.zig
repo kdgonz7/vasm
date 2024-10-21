@@ -10,7 +10,6 @@ const parser = @import("parser.zig");
 
 pub const openlud = @import("platforms/openlud.zig");
 pub const nexfuse = @import("platforms/nexfuse.zig");
-pub const siax = @import("platforms/siax.zig");
 
 pub fn ast(allocator: std.mem.Allocator, text: []const u8) !parser.Node {
     var lex = lexer.Lexer.init(allocator);
