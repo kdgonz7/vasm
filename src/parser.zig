@@ -17,18 +17,20 @@
 
 const std = @import("std");
 const lexerl = @import("lexer.zig");
-const token_stream_z = @import("token_stream.zig");
+const token_stream = @import("token_stream.zig");
 
-const Identifier = token_stream_z.Identifier;
-const Number = token_stream_z.Number;
-const TokenStream = token_stream_z.TokenStream;
-const Operator = token_stream_z.Operator;
-const Literal = token_stream_z.Literal;
+const Identifier = token_stream.Identifier;
+const Number = token_stream.Number;
+const TokenStream = token_stream.TokenStream;
+const Operator = token_stream.Operator;
+const Literal = token_stream.Literal;
+const Span = token_stream.Span;
+const Token = token_stream.Token;
 
 const Lexer = lexerl.Lexer;
 const LexerError = lexerl.LexerError;
 
-const OpKind = token_stream_z.OperatorKind;
+const OpKind = token_stream.OperatorKind;
 
 pub const ParseError = error{
     /// A simple notifier when the parser is at the end of its stream before parsing an input src.
@@ -136,7 +138,7 @@ pub const Value = union(ValueTag) {
         };
     }
 
-    pub fn getSpan(self: *const Value) token_stream_z.Span {
+    pub fn getSpan(self: *const Value) Span {
         return switch (self.*) {
             ValueTag.identifier => self.identifier.span,
             ValueTag.number => self.number.span,
@@ -157,7 +159,7 @@ pub const Value = union(ValueTag) {
 /// A register reference. E.g. R0, R1, R2
 pub const Register = struct {
     register_number: usize,
-    span: token_stream_z.Span = token_stream_z.Span{
+    span: Span = Span{
         .begin = 0,
         .char_begin = 0,
         .end = 0,
@@ -178,7 +180,7 @@ pub const Register = struct {
 pub const Range = struct {
     starting_position: usize,
     ending_position: usize,
-    span: token_stream_z.Span = token_stream_z.Span{
+    span: Span = Span{
         .begin = 0,
         .char_begin = 0,
         .end = 0,
@@ -297,9 +299,9 @@ pub const Parser = struct {
     token_stream_internal: *TokenStream,
     parent_allocator: std.mem.Allocator,
 
-    pub fn init(parent_allocator: std.mem.Allocator, token_stream: *TokenStream) Parser {
+    pub fn init(parent_allocator: std.mem.Allocator, with_stream: *TokenStream) Parser {
         return Parser{
-            .token_stream_internal = token_stream,
+            .token_stream_internal = with_stream,
             .parent_allocator = parent_allocator,
         };
     }
@@ -312,12 +314,12 @@ pub const Parser = struct {
         return self.token_stream_internal;
     }
 
-    pub fn getCurrentToken(self: *Parser) !*token_stream_z.Token {
+    pub fn getCurrentToken(self: *Parser) !*Token {
         var str = self.getInternalTokens();
         return try str.getItemByReferenceOrError(str.getCurrentStreamPosition());
     }
 
-    pub fn getNextToken(self: *Parser) !*token_stream_z.Token {
+    pub fn getNextToken(self: *Parser) !*Token {
         var str = self.getInternalTokens();
         return try str.getItemByReferenceOrError(str.getCurrentStreamPosition() + 1);
     }
@@ -583,7 +585,7 @@ pub const Parser = struct {
         return node;
     }
 
-    pub fn createValueFromToken(self: *Parser, token: *token_stream_z.Token) !Value {
+    pub fn createValueFromToken(self: *Parser, token: *Token) !Value {
         switch (token.*) {
             .number => {
                 return Value{
