@@ -26,7 +26,7 @@ const Operator = token_stream.Operator;
 const Literal = token_stream.Literal;
 const Span = token_stream.Span;
 const Token = token_stream.Token;
-
+const Aside = @import("ctypes/Aside.zig");
 const Lexer = lexerl.Lexer;
 const LexerError = lexerl.LexerError;
 
@@ -69,6 +69,8 @@ pub const ParseError = error{
     RangeExpectsEnd,
     RangeExpectsStart,
     RangeStartsAfterEnd,
+    AsideNameMustBeIdentifier,
+    AsideExpectsName,
 };
 
 pub const ValueTag = enum {
@@ -212,6 +214,8 @@ pub const NodeTag = enum {
     /// Macros hold a `name` (identifier) and any `Value` parameters.
     macro,
 
+    aside,
+
     /// The root node. Holds all of the tree's children.
     root,
 };
@@ -223,6 +227,7 @@ pub const Node = union(NodeTag) {
     instruction_call: Instruction,
     procedure: Procedure,
     macro: Macro,
+    aside: Aside,
     root: Root,
 
     pub fn asRoot(self: *Node) *Root {
@@ -421,7 +426,15 @@ pub const Parser = struct {
         switch (operator.kind) {
             // if it's an @ symbol, we then check if the old syntax is enabled, which
             // is off by default. In this case we parse it like a procedure header.
-            OpKind.at_symbol => {},
+            OpKind.at_symbol => {
+                return error.OldProcedureSyntax;
+            },
+
+            // :aside
+            OpKind.colon => {
+                return try self.createNodeFromAside();
+            },
+
             OpKind.bracket_open => {
                 // the opening of a macro.
                 // this has the syntax of
@@ -441,6 +454,52 @@ pub const Parser = struct {
         return Node{
             .value = Value{
                 .number = Number.init(56),
+            },
+        };
+    }
+
+    /// Creates an `Aside` node
+    pub fn createNodeFromAside(self: *Parser) !Node {
+        self.incrementCurrentPosition();
+
+        if (self.streamIsAtEnd()) {
+            return error.AsideExpectsName;
+        }
+
+        const name = try self.getCurrentToken();
+
+        if (name.getType() != .identifier) {
+            return error.AsideNameMustBeIdentifier;
+        }
+
+        const name_as_identifier = name.identifier;
+
+        self.incrementCurrentPosition();
+
+        var params = std.ArrayList(Value).init(self.parent_allocator);
+
+        while (!self.streamIsAtEnd()) {
+            const current_token = try self.getCurrentToken();
+
+            if (current_token.getType() == .operator and current_token.operator.kind == OpKind.newline) {
+                break;
+            }
+
+            try params.append(try self.createValueFromToken(current_token));
+
+            self.incrementCurrentPosition();
+        }
+
+        return Node{
+            .aside = Aside{
+                .name = name_as_identifier,
+                .parameters = params,
+                .span = .{
+                    .begin = name.getSpan().begin,
+                    .char_begin = name.getSpan().char_begin,
+                    .end = name.getSpan().end,
+                    .line_number = name.getSpan().line_number,
+                },
             },
         };
     }
@@ -602,11 +661,21 @@ pub const Parser = struct {
                 }
 
                 if (ident.identifier_string[0] == 'R') {
+                    // NOTE: without this, identifiers that start with R can be parsed as their identifier
+                    // and not a register every time
+                    for (ident.identifier_string[1..]) |char| {
+                        if (!std.ascii.isDigit(char)) {
+                            return Value{
+                                .identifier = ident,
+                            };
+                        }
+                    }
                     if (ident.identifier_string.len == 1) {
                         return error.RegisterMissingNumber;
                     }
 
                     const register_number = ident.identifier_string[1..];
+                    std.debug.print("{s}\n", .{register_number});
 
                     const reg = Register{
                         .register_number = try std.fmt.parseInt(usize, register_number, 0),
@@ -1014,6 +1083,30 @@ test "ranges" {
     try std.testing.expectEqual(10, start.children.items[0].instruction_call.parameters.items[0].range.ending_position);
 }
 
+test "asides" {
+    var arena = createTestArena();
+    const allocator = arena.allocator();
+    defer arena.deinit();
+
+    var lexer = Lexer.init(allocator);
+
+    lexer.setInputText(":aside A 1");
+    try lexer.startLexingInputText();
+
+    var parser = Parser.init(allocator, &lexer.stream);
+    defer parser.deinit();
+
+    var root = try parser.createRootNode();
+
+    try std.testing.expectEqual(1, root.asRoot().children.items.len);
+
+    const aside_1 = root.asRoot().children.items[0].aside;
+
+    try std.testing.expectEqual(2, aside_1.parameters.items.len);
+    try std.testing.expectEqualStrings("aside", aside_1.name.identifier_string);
+    try std.testing.expectEqualStrings("A", aside_1.parameters.items[0].identifier.identifier_string);
+}
+
 test "ranges with other parameters" {
     var arena = createTestArena();
     const allocator = arena.allocator();
@@ -1154,8 +1247,8 @@ test "error test 4" {
 
     var parser = Parser.init(allocator, &lexer.stream);
 
-    try std.testing.expectError(error.UnexpectedToken, parser.createRootNode());
-    try std.testing.expectEqual(0, parser.token_stream_internal.stream_pos);
+    try std.testing.expectError(error.AsideExpectsName, parser.createRootNode());
+    try std.testing.expectEqual(1, parser.token_stream_internal.stream_pos); // aside tries to find a name
 }
 
 test "error test 5" {
