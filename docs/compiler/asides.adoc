@@ -1,0 +1,15 @@
+= Asides
+
+Asides are statements that affect the outputn code of the program.
+
+== :set
+
+Sets a variable. Similar to `#define` in C-like languages.
+
+[source,asm]
+--
+:set myFavoriteLetter 'a'
+
+_start:
+    echo myFavoriteLetter ; prints 'a'
+--

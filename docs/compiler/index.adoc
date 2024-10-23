@@ -5,4 +5,5 @@
 * link:./flags.html[Compiler Flags]
 * link:./intro.html[Compiler Introduction]
 * link:./directives.html[Compiler Directive Runtime]
+* link:./asides.html[Compiler Asides]
 * link:./macros.html[Compiler Macros]

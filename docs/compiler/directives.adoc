@@ -1,9 +1,32 @@
 = Macro Directives Docs
 
-== `compat`
+== compat
 
 The *compat* macro specifies what platform this program is compatible with. Essentially equal to setting `-f` in the compiler command line options.
 
-== `endian`
+WARNING: When adding a `compat` into a file, if the `--format` flag is specified, it will have precedence over the compat macro.
 
-Specifies the endianness of the compiled file.
+[source,asm]
+--
+[compat nexfuse]
+[compat openlud]
+--
+
+== endian
+
+Specifies the endianness of the compiled file. This changes the bit order of the numbers when being laid out in a file.
+
+[source,asm]
+--
+[endian little]
+[endian big]
+--
+
+== compile-if
+
+Abruptly errors out of the compilation stage if the format specified is not the format `FORMAT`.
+
+[source,asm]
+--
+[compile-if nexfuse]
+--
