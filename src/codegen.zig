@@ -28,12 +28,11 @@ const Parser = parse.Parser;
 
 const Node = parse.Node;
 const NodeTag = parse.NodeTag;
-
+const Aside = @import("ctypes/Aside.zig");
 const Value = parse.Value;
 const ValueTag = parse.ValueTag;
-
-const Root = parse.Root;
 const Procedure = parse.Procedure;
+const Root = parse.Root;
 
 const InstructionResult = instruction_result.InstructionResult;
 
@@ -216,6 +215,9 @@ pub fn Vendor(comptime format_type: type) type {
     return struct {
         const Self = @This();
 
+        /// the parent allocator.
+        parent_allocator: std.mem.Allocator,
+
         /// The procedure map holds `name` -> `binary`. Essentially the .sections section in the file
         procedure_map: std.StringHashMap(std.ArrayList(format_type)),
 
@@ -226,8 +228,8 @@ pub fn Vendor(comptime format_type: type) type {
         /// The dead code eliminator
         peephole_optimizer: peephole.PeepholeOptimizer(format_type),
 
-        /// the parent allocator.
-        parent_allocator: std.mem.Allocator,
+        /// Values as replacements for other values.
+        expandables: std.StringHashMap(Value) = undefined,
 
         /// Place a NULL byte at the end of an instruction binary?
         nul_after_sequence: bool = false,
@@ -246,11 +248,14 @@ pub fn Vendor(comptime format_type: type) type {
         pub fn init(parent_allocator: std.mem.Allocator) Self {
             return Self{
                 .parent_allocator = parent_allocator,
-                .procedure_map = std.StringHashMap(std.ArrayList(format_type)).init(parent_allocator),
-                .instruction_set = std.StringHashMap(Instruction(format_type)).init(parent_allocator),
                 .peephole_optimizer = peephole.PeepholeOptimizer(format_type).init(parent_allocator),
-                .annotations = std.StringHashMap(Annotation).init(parent_allocator),
+
                 .results = std.ArrayList(InstructionResult).init(parent_allocator),
+
+                .expandables = std.StringHashMap(Value).init(parent_allocator),
+                .instruction_set = std.StringHashMap(Instruction(format_type)).init(parent_allocator),
+                .procedure_map = std.StringHashMap(std.ArrayList(format_type)).init(parent_allocator),
+                .annotations = std.StringHashMap(Annotation).init(parent_allocator),
             };
         }
 
@@ -329,6 +334,10 @@ pub fn Vendor(comptime format_type: type) type {
 
                             // ignore macros, that's for the macro stage
                             .macro => |_| {},
+
+                            .aside => |*aside| {
+                                try self.runAside(aside);
+                            },
 
                             else => {
                                 return error.InvalidExpressionRoot;
@@ -417,7 +426,21 @@ pub fn Vendor(comptime format_type: type) type {
                                     }
                                 }
 
-                                const res = try map_item.function(&generator, self, ins.parameters.items);
+                                var params_clone = std.ArrayList(Value).init(self.parent_allocator);
+
+                                for (ins.parameters.items) |it| {
+                                    if (it.getType() == .identifier) {
+                                        if (self.expandables.get(it.toIdentifier().identifier_string)) |value| {
+                                            try params_clone.append(value);
+                                            continue;
+                                        }
+
+                                        try params_clone.append(it);
+                                    } else {
+                                        try params_clone.append(it);
+                                    }
+                                }
+                                const res = try map_item.function(&generator, self, params_clone.items[0..]);
 
                                 switch (res) {
                                     .ok => {},
@@ -450,6 +473,15 @@ pub fn Vendor(comptime format_type: type) type {
             return Result{ .ok = 0 };
         }
 
+        pub fn runAside(self: *Self, aside: *Aside) !void {
+            if (std.ascii.eqlIgnoreCase(aside.name.identifier_string, "set")) {
+                const ident_name = aside.parameters.items[0].toIdentifier().identifier_string;
+                const value = aside.parameters.items[1];
+
+                try self.expandables.put(ident_name, value);
+            }
+        }
+
         pub fn peepholeOptimizeBinary(self: *Self) !void {
             try self.peephole_optimizer.optimizeUsingKnownInstructions(&self.procedure_map);
         }
@@ -474,6 +506,14 @@ fn movInstructionTestError(generator: *Generator(i32), vendor: *Vendor(i32), arg
     _ = args;
     _ = generator;
     return InstructionResult.typeMismatch(.literal, .register);
+}
+
+fn movInstructionTestTypes(generator: *Generator(i32), vendor: *Vendor(i32), args: []Value) !InstructionResult {
+    _ = vendor;
+    _ = generator;
+    try std.testing.expectEqual(.register, args[0].getType());
+
+    return .ok;
 }
 
 fn oneArgumentInstruction(generator: *Generator(i32), vendor: *Vendor(i32), args: []Value) !InstructionResult {
@@ -647,6 +687,22 @@ test "creating and using a vendor with 0 argument functions that returns an erro
     try std.testing.expectEqual(.register, res.instruction_coughed_up_bad_result.type_mismatch.got);
 }
 
+test "aside" {
+    var arena = std.heap.ArenaAllocator.init(std.testing.allocator);
+    const allocatir = arena.allocator();
+    defer arena.deinit();
+
+    var sibc = Vendor(i32).init(allocatir);
+
+    var mov_ins = Instruction(i32).init("mov", &movInstructionTestTypes);
+    try sibc.implementInstruction("mov", &mov_ins);
+
+    const root = try createNodeFrom(allocatir, ":set REG_ONE R1\na: mov REG_ONE, 1\n");
+
+    const res = (try sibc.generateBinary(root));
+
+    try std.testing.expectEqual(true, res.isOk());
+}
 test "register too big" {
     var arena = std.heap.ArenaAllocator.init(std.testing.allocator);
     const allocatir = arena.allocator();
