@@ -257,6 +257,9 @@ pub fn Vendor(comptime format_type: type) type {
         pub fn deinit(self: *Self) void {
             self.procedure_map.deinit();
             self.instruction_set.deinit();
+            self.peephole_optimizer.deinit();
+            self.annotations.deinit();
+            self.results.deinit();
         }
 
         /// Puts `name` to `instruction`
