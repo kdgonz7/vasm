@@ -633,6 +633,7 @@ pub const Parser = struct {
                     .curly_open => {
                         return try self.createValueFromRange();
                     },
+
                     else => {},
                 }
             },
@@ -645,6 +646,15 @@ pub const Parser = struct {
         return error.InvalidTokenValue;
     }
 
+    /// Creates a value from a range. Range syntax:
+    ///
+    /// `{ Number : Number }`
+    ///
+    /// Ranges are useful for specifying ranges of registers and data,
+    /// for example, in the context of registers, you can use the range {1:5}
+    /// which can compile into R1, R2, R3, R4, and R5. Ranges can also
+    /// have specific optimizations that can not be performed on the root
+    /// source.
     pub fn createValueFromRange(self: *Parser) ParseError!Value {
         // we start on the {
         // the syntax is
