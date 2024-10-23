@@ -482,7 +482,6 @@ pub const Parser = struct {
             // otherwise we've got an argument add it
             try node.macro.parameters.append(try self.createValueFromToken(current));
 
-            // next token!
             self.incrementCurrentPosition();
         }
 
