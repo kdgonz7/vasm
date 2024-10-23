@@ -55,7 +55,7 @@ pub const Reporter = struct {
         self.setStderrColor(.bold);
         self.setStderrColor(.red);
 
-        wri.print("fatal error: ", .{}) catch unreachable;
+        wri.print("error: ", .{}) catch unreachable;
 
         self.setStderrColor(.reset);
         self.setStderrColor(.bold);
