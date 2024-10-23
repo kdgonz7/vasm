@@ -224,11 +224,11 @@ pub const Reporter = struct {
                 self.errorMessage("{s}:{d}:{d}: {s}", .{
                     ctx.file_name,
                     reg.span.line_number,
-                    reg.span.begin,
+                    reg.span.char_begin,
                     "register number too large",
                 });
 
-                ctx.lexer.area.char_pos = reg.span.begin;
+                ctx.lexer.area.char_pos = reg.span.char_begin;
                 ctx.lexer.area.line_number = reg.span.line_number;
 
                 self.getSourceLocation(ctx.lexer, .suggestion);
