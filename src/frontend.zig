@@ -223,7 +223,20 @@ pub fn runCompilerFrontend() !void {
         .file_name = file,
     }, &lex, &pars);
 
+    const last_cached_vm_choice = opts.format;
+
+    // THE PREPROCESSOR
+    // runs before compilation, manages compiler variables, etc. Macros are initially ignored by
+    // the compiler.
     const res = compiler_pp.preprocessWithDefaultRuntime(allocator, &opts, &ast) catch |err| report.printError(&lex, file, err);
+
+    if (last_cached_vm_choice != null and opts.format != null and !stringCompare(last_cached_vm_choice.?, opts.format.?) and !stringCompare(last_cached_vm_choice.?, "none")) {
+        std.log.warn("conflicting `compat` and `--format` options.", .{});
+        std.log.warn("format option specified: {s}", .{last_cached_vm_choice.?});
+        std.log.warn("file defined format: {s}", .{opts.format.?});
+
+        opts.format = last_cached_vm_choice;
+    }
 
     if (res != .ok) {
         report.printPreprocessError(res, &lex);
