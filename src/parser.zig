@@ -675,7 +675,6 @@ pub const Parser = struct {
                     }
 
                     const register_number = ident.identifier_string[1..];
-                    std.debug.print("{s}\n", .{register_number});
 
                     const reg = Register{
                         .register_number = try std.fmt.parseInt(usize, register_number, 0),
