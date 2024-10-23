@@ -375,10 +375,33 @@ pub fn Vendor(comptime format_type: type) type {
                             // that instruction has been expanded once and is in use
                             try self.peephole_optimizer.remember(ins.name.identifier_string);
                         } else {
+                            // create a mock parameters object to
+                            // manage expanded variables
+                            var params_clone = std.ArrayList(Value).init(self.parent_allocator);
+                            defer params_clone.deinit();
 
-                            // built in instruction
+                            // copy each parameter into this clone
+                            for (ins.parameters.items) |it| {
+                                // if its an identifier
+                                if (it.getType() == .identifier) {
+                                    // and it exists
+                                    if (self.expandables.get(it.toIdentifier().identifier_string)) |value| {
+                                        try params_clone.append(value);
+                                        continue;
+                                    }
+
+                                    try params_clone.append(it);
+                                } else {
+                                    // otherwise append it anyway regular
+                                    try params_clone.append(it);
+                                }
+                            }
+
+                            const parameters = params_clone;
+
+                            // Try to get a built-in instruction
                             if (self.instruction_set.get(ins.name.identifier_string)) |map_item| {
-                                for (ins.parameters.items) |it| {
+                                for (parameters.items) |it| {
                                     if (it.getType() == .register and it.toRegister().getRegisterNumber() > std.math.maxInt(format_type)) {
                                         return Result{
                                             .register_number_too_large = it.toRegister(),
@@ -393,7 +416,7 @@ pub fn Vendor(comptime format_type: type) type {
                                     // annotation list and check it against the param list
                                     // if its a multiple type, check for either type.
 
-                                    if (ins.parameters.items.len < annotation.type_list.items.len) {
+                                    if (parameters.items.len < annotation.type_list.items.len) {
                                         return Result{
                                             .too_little_params = TooLittleInfoEr{
                                                 .annotation = annotation,
@@ -403,8 +426,8 @@ pub fn Vendor(comptime format_type: type) type {
                                         };
                                     }
 
-                                    for (0..ins.parameters.items.len) |i| {
-                                        const it = ins.parameters.items[i];
+                                    for (0..parameters.items.len) |i| {
+                                        const it = parameters.items[i];
                                         const cur_annot = annotation.type_list.items[i];
 
                                         // if any type can be a parameter, skip
@@ -426,20 +449,6 @@ pub fn Vendor(comptime format_type: type) type {
                                     }
                                 }
 
-                                var params_clone = std.ArrayList(Value).init(self.parent_allocator);
-
-                                for (ins.parameters.items) |it| {
-                                    if (it.getType() == .identifier) {
-                                        if (self.expandables.get(it.toIdentifier().identifier_string)) |value| {
-                                            try params_clone.append(value);
-                                            continue;
-                                        }
-
-                                        try params_clone.append(it);
-                                    } else {
-                                        try params_clone.append(it);
-                                    }
-                                }
                                 const res = try map_item.function(&generator, self, params_clone.items[0..]);
 
                                 switch (res) {
