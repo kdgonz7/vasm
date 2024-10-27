@@ -4,6 +4,7 @@ from os.path import basename, join
 from shutil import which
 from colorama import Fore, Style
 from webbrowser import open as open_url
+from threading import Thread
 
 # The format used to generate web docs
 WEB_FORMAT = "html"
@@ -92,6 +93,40 @@ def site():
         for file in files:
             if file.endswith(".adoc"):
                 system(f"{ASCIIDOCTOR} -b {WEB_FORMAT} {join(dir_path, file)}")
+
+def site_mt():
+    """Builds the site documentation. Reading every .adoc file in the docs/ directory
+    
+    This version is multi-threaded.
+    
+    """
+
+    # add a thread pool
+    threads = []
+
+    # keep track of the required files
+    required_files = []
+
+    # iterate through files, adding each one to a list
+    # for final compilation
+    for dir_path, dir_names, files in walk("docs"):
+        for file in files:
+            if file.endswith(".adoc"):
+                required_files.append(join(dir_path, file))
+
+    # iterate through required files
+    i = 0
+    while i < len(required_files):
+        # run a thread for each file we have
+        threads.append(Thread(target=system, args=[f"{ASCIIDOCTOR} -b {WEB_FORMAT} {required_files[i]}"]))
+        i += 1
+
+    # start and join them 
+    for thread in threads:
+        thread.start()
+
+    for thread in threads:
+        thread.join()
 
 
 def man_pages():
@@ -233,6 +268,11 @@ commands = {
     },
     "site": {
         "runner": site,
+        "description": "Builds the website documentation",
+        "relies_on": [ensure_asciidoc],
+    },
+    "sitemulti": {
+        "runner": site_mt,
         "description": "Builds the website documentation",
         "relies_on": [ensure_asciidoc],
     },
