@@ -7,3 +7,4 @@
 * link:./directives.html[Compiler Directive Runtime]
 * link:./asides.html[Compiler Asides]
 * link:./macros.html[Compiler Macros]
+* link:./lang.html[The LR Assembly Language]
