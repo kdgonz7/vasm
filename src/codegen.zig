@@ -28,7 +28,7 @@ const Parser = parse.Parser;
 
 const Node = parse.Node;
 const NodeTag = parse.NodeTag;
-const Aside = @import("ctypes/Aside.zig");
+const Aside = parse.Aside;
 const Value = parse.Value;
 const ValueTag = parse.ValueTag;
 const Procedure = parse.Procedure;
