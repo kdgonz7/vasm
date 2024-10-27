@@ -318,7 +318,19 @@ pub const Reporter = struct {
         std.process.exit(1);
     }
 
+    pub fn noSourceInformationAvailable(self: *Reporter, for_error: anyerror) noreturn {
+        self.setStderrColor(.dim);
+        self.setStderrColor(.black);
+
+        self.errorMessage("{s} (no source information available)", .{@errorName(for_error)});
+
+        std.process.exit(1);
+    }
+
     pub fn astError(self: *Reporter, err: anytype, ctx: anytype, lex: *lexer.Lexer, pars: *parser.Parser) noreturn {
+        if (pars.token_stream_internal.stream_pos == 0) {
+            self.noSourceInformationAvailable(err);
+        }
         const last = pars.token_stream_internal.internal_list.items[pars.token_stream_internal.stream_pos - 1];
 
         switch (err) {
