@@ -2542,10 +2542,33 @@ number 212999 ; non-standard. depending on the destination format this might not
 </div>
 </div>
 </div>
+<div class="sect1">
+<h2 id="_literals">Literals</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Simple character literals are supported, including escape sequences.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-asm" data-lang="asm">push R1, 'A'
+push R1, 'B'
+push R1, '\n'</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Character literals are also supported in <a href="#_asides">Aside</a> statements.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-asm" data-lang="asm">:set coolLetter 'B'</code></pre>
+</div>
+</div>
+</div>
+</div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2024-10-26 21:40:33 -0400
+Last updated 2024-10-26 22:08:52 -0400
 </div>
 </div>
 </body>

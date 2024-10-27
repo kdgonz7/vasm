@@ -69,3 +69,21 @@ number R1 ; register, compiles to the number 1, however, is its own type.
 number 215 ; decimal number 215
 number 212999 ; non-standard. depending on the destination format this might not compile
 --
+
+== Literals
+
+Simple character literals are supported, including escape sequences.
+
+[source,asm]
+--
+push R1, 'A'
+push R1, 'B'
+push R1, '\n'
+--
+
+Character literals are also supported in link:#_asides[Aside] statements.
+
+[source,asm]
+--
+:set coolLetter 'B'
+--
