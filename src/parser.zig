@@ -26,7 +26,6 @@ const Operator = token_stream.Operator;
 const Literal = token_stream.Literal;
 const Span = token_stream.Span;
 const Token = token_stream.Token;
-const Aside = @import("ctypes/Aside.zig");
 const Lexer = lexerl.Lexer;
 const LexerError = lexerl.LexerError;
 
@@ -177,6 +176,12 @@ pub const Register = struct {
     pub fn getRegisterNumber(self: *const Register) usize {
         return self.register_number;
     }
+};
+
+pub const Aside = struct {
+    name: Identifier,
+    parameters: std.ArrayList(Value),
+    span: Span,
 };
 
 pub const Range = struct {
