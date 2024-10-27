@@ -1,6 +1,6 @@
 = Asides
 
-Asides are statements that affect the outputn code of the program.
+Asides are statements that affect the output code of the program.
 
 == :set
 
