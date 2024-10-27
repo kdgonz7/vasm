@@ -99,3 +99,9 @@ populate R1, {1:5}, 'B'
 --
 
 The range between the first and third parameters means FROM number ONE to FIVE. Ranges are new to v0.8-v0.9
+
+== Weird Platform-specific Caveats
+
+* In NexFUSE, all labels must be one letter, meaning that when calling `jmp` on a label `abc`, the label being called will still just be `a`.
+* In OpenLUD, headless binaries are allowed, however, do not generate anything.
+* SiAX is a MacOS-Only VM.

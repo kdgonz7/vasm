@@ -2582,10 +2582,28 @@ for ranges is a <strong>Slice</strong>, which its name in the LR Assembly standa
 </div>
 </div>
 </div>
+<div class="sect1">
+<h2 id="_weird_platform_specific_caveats">Weird Platform-specific Caveats</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p>In NexFUSE, all labels must be one letter, meaning that when calling <code>jmp</code> on a label <code>abc</code>, the label being called will still just be <code>a</code>.</p>
+</li>
+<li>
+<p>In OpenLUD, headless binaries are allowed, however, do not generate anything.</p>
+</li>
+<li>
+<p>SiAX is a MacOS-Only VM.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2024-10-26 22:11:27 -0400
+Last updated 2024-10-26 22:13:45 -0400
 </div>
 </div>
 </body>
