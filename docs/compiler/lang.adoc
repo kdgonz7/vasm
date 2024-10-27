@@ -1,0 +1,71 @@
+= LR Assembly Language
+
+== Instructions
+
+Instructions are made to allow for the VASM compiler to turn human-readable instruction addresses into bytecode.
+
+[source,asm]
+--
+insName: identifier args[...]: any
+--
+
+[source,asm]
+--
+push R1, 5 ; push 5 into R1
+push R1, 6 ; push 6 into R1
+--
+
+== Asides
+
+Asides are functions that are ran between code generation and initial compilation. Good for running functionality that has no immediate represntation, however, makes it easier to write and read. For the list of available Asides, see the link:./asides.html[Asides Documentation]
+
+[source,asm]
+--
+: (asideName: identifier) (args[...]: any)
+--
+
+[source,asm]
+--
+:set thePrivateLetter 'B'
+
+_start:
+    push R1, thePrivateLetter
+    ; R1... ['B', ...]
+--
+
+== Procedures
+
+Since LR Assembly is procedural, the procedures can be defined with the following syntax:
+
+[source,asm]
+--
+SubName (Identifier) : Statement*
+--
+
+In VASM, each identifier is looked over to check whether it's a procedure or not. This design procedure
+allows for a more dynamic and predictable code structure as opposed to trying to look at procedures on the fly.
+
+== Macros
+
+Macros are code that is ran prior to the code generation stage and have no immediate bytecode representations. _However_, they are different from link:#_asides[Asides] because they are ran without any source-code awareness. This means that anything placed in macros is solely known to the compiler and can affect how the output binary comes out. For more information, see the link:./macros.html[Macro Documentation Page]. And for the preprocessor runtime, see the link:./directives.html[Standard Directives Page]
+
+[source,asm]
+--
+[compat nexfuse] ; to compile the program in nexfuse mode
+[compile-if nexfuse] ; error out if the program isn't being compiled with the 'nexfuse' platform.
+--
+
+== Numbers
+
+The number syntax is similar to other languages. It can handle `0b` numbers, `0x` numbers, and register references. The number for VASM is 64-bit, meaning that its maximum value is `9,223,372,036,854,775,807`, however, general safety measures are in place to prevent number overflow and truncating, and errors will be printed if numbers are added that are larger than the destination format's number size.
+
+Here is an example.
+
+[source,asm]
+--
+number 0b101110 ; binary number 46
+number 0x01 ; hex number 1
+number R1 ; register, compiles to the number 1, however, is its own type.
+number 215 ; decimal number 215
+number 212999 ; non-standard. depending on the destination format this might not compile
+--
